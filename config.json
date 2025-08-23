@@ -1,0 +1,9 @@
+{
+  "last_input_file": "C:/Users/D_909/Desktop/расчет коэффициентов нелинейной усушки, и предварительный расчет усушки 1.1/исходные_данные/sheet_1_Лист_1.csv",
+  "window_geometry": "1288x817+127+27",
+  "default_period_days": 7,
+  "default_b_coef": 0.049,
+  "max_workers": 4,
+  "cache_size": 128,
+  "log_retention_days": 7
+}

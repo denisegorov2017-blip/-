@@ -1,0 +1,7 @@
+{
+    "default_period_days": 7,
+    "default_b_coef": 0.049,
+    "max_workers": 4,
+    "cache_size": 128,
+    "log_retention_days": 7
+}

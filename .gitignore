@@ -1,0 +1,14 @@
+venv/
+__pycache__/
+результаты/
+исходные_данные/
+logs/
+backup_*/
+serena_mcp_server/
+*.pyc
+*.log
+*.csv
+*.html
+*.pdf
+*.xls
+*.xlsx
