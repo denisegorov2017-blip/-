@@ -1,0 +1,560 @@
+
+        <!DOCTYPE html>
+        <html lang="ru">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Ошибки расчета усушки</title>
+            <style>
+                
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            margin: 0; 
+            padding: 0; 
+            background: linear-gradient(135deg, #f5f7fa 0%, #e4edf9 100%);
+            color: #333;
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+        .container { 
+            max-width: 1400px; 
+            margin: 20px auto; 
+            padding: 25px; 
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 12px 40px rgba(0,0,0,0.15);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .container::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 5px;
+            background: linear-gradient(90deg, #3498db, #2980b9);
+        }
+        .header {
+            background: linear-gradient(135deg, #2c3e50, #4a6491);
+            color: white;
+            padding: 40px;
+            border-radius: 15px 15px 0 0;
+            margin: -25px -25px 25px -25px;
+            position: relative;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.25);
+            overflow: hidden;
+        }
+        
+        .header::before {
+            content: "";
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 70%);
+            transform: rotate(30deg);
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 36px;
+            font-weight: 800;
+            letter-spacing: 0.5px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        .header .subtitle {
+            margin: 15px 0 0 0;
+            font-size: 20px;
+            opacity: 0.95;
+            font-weight: 300;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+        }
+        .header .file-info {
+            margin: 20px 0 0 0;
+            font-size: 18px;
+            opacity: 0.95;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 25px;
+        }
+        .header .file-info div {
+            background: rgba(255,255,255,0.2);
+            padding: 12px 20px;
+            border-radius: 25px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .search-container { 
+            margin-bottom: 35px; 
+            padding: 30px; 
+            background: #ffffff;
+            border-radius: 15px;
+            box-shadow: 0 6px 25px rgba(0,0,0,0.12);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            border: 1px solid #eef2f7;
+            border-top: 4px solid #3498db;
+        }
+        .search-input-container {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        .search-input { 
+            flex: 1;
+            min-width: 300px;
+            padding: 16px 22px; 
+            font-size: 18px; 
+            border: 2px solid #3498db; 
+            border-radius: 10px;
+            outline: none;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 10px rgba(52, 152, 219, 0.15);
+        }
+        .search-input:focus {
+            border-color: #2980b9;
+            box-shadow: 0 0 0 5px rgba(52, 152, 219, 0.4);
+            transform: translateY(-2px);
+        }
+        .search-label { 
+            font-weight: 700; 
+            font-size: 20px;
+            color: #2c3e50;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .stats { 
+            margin-top: 20px; 
+            font-size: 18px; 
+            color: #555;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        .stats span {
+            font-weight: 700;
+            color: #3498db;
+            padding: 8px 15px;
+            background: #e3f2fd;
+            border-radius: 25px;
+            box-shadow: 0 2px 5px rgba(52, 152, 219, 0.1);
+        }
+        .summary-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 25px;
+            margin-bottom: 35px;
+        }
+        .summary-card {
+            padding: 30px;
+            background: #ffffff;
+            border-left: 8px solid #3498db;
+            border-radius: 15px;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.12);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .summary-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 5px;
+            background: linear-gradient(90deg, #3498db, #2980b9);
+        }
+        
+        .summary-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 12px 30px rgba(0,0,0,0.2);
+        }
+        
+        .summary-card:hover .value {
+            transform: scale(1.05);
+        }
+        
+        .summary-card h3 {
+            margin: 0 0 15px 0;
+            font-size: 20px;
+            color: #2c3e50;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .summary-card .value {
+            font-size: 32px;
+            font-weight: 800;
+            color: #3498db;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+        
+        .summary-card .description {
+            font-size: 16px;
+            color: #7f8c8d;
+            margin-top: 10px;
+            text-align: center;
+        }
+        
+        .table-container {
+            background: #ffffff;
+            border-radius: 15px;
+            box-shadow: 0 6px 25px rgba(0,0,0,0.12);
+            overflow: hidden;
+            margin-bottom: 35px;
+            border: 1px solid #eef2f7;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 16px;
+        }
+        
+        th {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+            text-align: left;
+            padding: 18px 20px;
+            font-weight: 700;
+            cursor: pointer;
+            user-select: none;
+            position: sticky;
+            top: 0;
+            z-index: 5;
+        }
+        
+        th:hover {
+            background: linear-gradient(135deg, #2980b9, #2573a7);
+        }
+        
+        th::after {
+            content: "↕";
+            float: right;
+            opacity: 0.7;
+        }
+        
+        td {
+            padding: 16px 20px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        tr:nth-child(even) {
+            background-color: #f8f9fa;
+        }
+        
+        tr:hover {
+            background-color: #e3f2fd;
+            transform: scale(1.01);
+            transition: all 0.2s ease;
+        }
+        
+        .accuracy-high {
+            color: #27ae60;
+            font-weight: 700;
+        }
+        
+        .accuracy-medium {
+            color: #f39c12;
+            font-weight: 700;
+        }
+        
+        .accuracy-low {
+            color: #e74c3c;
+            font-weight: 700;
+        }
+        
+        .footer {
+            text-align: center;
+            margin-top: 40px;
+            padding: 25px;
+            color: #7f8c8d;
+            font-size: 16px;
+            border-top: 1px solid #eee;
+        }
+        
+        .footer a {
+            color: #3498db;
+            text-decoration: none;
+        }
+        
+        .footer a:hover {
+            text-decoration: underline;
+        }
+        
+        .error-row {
+            background-color: #ffebee;
+        }
+        
+        .error-row:hover {
+            background-color: #ffcdd2;
+        }
+        
+        .error-reason {
+            color: #c62828;
+            font-weight: 600;
+        }
+        
+        .inventory-deviation {
+            color: #f57c00;
+            font-weight: 600;
+        }
+        
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <div class="header">
+                    <h1>Ошибки расчета усушки</h1>
+                    <div class="subtitle">Система расчета нелинейных коэффициентов усушки</div>
+                    <div class="file-info">
+                        <div>📅 Дата отчета: 28.08.2025 19:00:27</div>
+                        <div>❌ Всего ошибок: 9</div>
+                    </div>
+                </div>
+                
+                <div class="search-container">
+                    <div class="search-input-container">
+                        <label class="search-label" for="searchInput">
+                            🔍 Поиск по номенклатуре:
+                        </label>
+                        <input type="text" id="searchInput" class="search-input" onkeyup="searchTable()" 
+                               placeholder="Введите название номенклатуры или причину ошибки...">
+                    </div>
+                    <div class="stats">
+                        <span>❌ Всего ошибок: <span id="totalErrors">9</span></span>
+                    </div>
+                </div>
+                
+                <div class="summary-cards">
+                    <div class="summary-card">
+                        <h3>❌ Всего ошибок</h3>
+                        <div class="value">9</div>
+                        <div class="description">Позиций с ошибками</div>
+                    </div>
+                    <div class="summary-card">
+                        <h3>📋 Причины ошибок</h3>
+                        <div class="value">1</div>
+                        <div class="description">Уникальных причин</div>
+                    </div>
+                </div>
+                
+                <div class="table-container">
+                    <table id="dataTable">
+                        <thead>
+                            <tr>
+                                <th onclick="sortTable(0)">Номенклатура</th>
+                                <th onclick="sortTable(1)">Причина</th>
+                                <th onclick="sortTable(2)">Отклонение</th>
+                                <th onclick="sortTable(3)">Начальный остаток</th>
+                                <th onclick="sortTable(4)">Приход</th>
+                                <th onclick="sortTable(5)">Расход</th>
+                                <th onclick="sortTable(6)">Конечный остаток</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+        
+                            <tr class="error-row">
+                                <td>ОКУНЬ Г/К</td>
+                                <td class="error-reason">Неизвестная причина</td>
+                                <td class="inventory-deviation">N/A</td>
+                                <td>0.0</td>
+                                <td>6.38</td>
+                                <td>2.822</td>
+                                <td>3.558</td>
+                            </tr>
+            
+                            <tr class="error-row">
+                                <td>БРЮШКИ ГОРБУШИ Х/К</td>
+                                <td class="error-reason">Неизвестная причина</td>
+                                <td class="inventory-deviation">N/A</td>
+                                <td>0.0</td>
+                                <td>3.042</td>
+                                <td>2.836</td>
+                                <td>0.206</td>
+                            </tr>
+            
+                            <tr class="error-row">
+                                <td>ЛЕЩ Х/К</td>
+                                <td class="error-reason">Неизвестная причина</td>
+                                <td class="inventory-deviation">N/A</td>
+                                <td>0.0</td>
+                                <td>2.6</td>
+                                <td>1.162</td>
+                                <td>1.438</td>
+                            </tr>
+            
+                            <tr class="error-row">
+                                <td>Рулет из МАСЛЯНОЙ х/к</td>
+                                <td class="error-reason">Неизвестная причина</td>
+                                <td class="inventory-deviation">N/A</td>
+                                <td>0.0</td>
+                                <td>2.518</td>
+                                <td>1.292</td>
+                                <td>1.226</td>
+                            </tr>
+            
+                            <tr class="error-row">
+                                <td>ГРЕНКИ ЮБИЛЕЙНЫЕ сало с горчицей</td>
+                                <td class="error-reason">Неизвестная причина</td>
+                                <td class="inventory-deviation">N/A</td>
+                                <td>0.0</td>
+                                <td>0.9</td>
+                                <td>0.0</td>
+                                <td>0.9</td>
+                            </tr>
+            
+                            <tr class="error-row">
+                                <td>ПЯТАЧКИ КРАБА ЭКСТРА</td>
+                                <td class="error-reason">Неизвестная причина</td>
+                                <td class="inventory-deviation">N/A</td>
+                                <td>0.0</td>
+                                <td>1.0</td>
+                                <td>0.0</td>
+                                <td>1.0</td>
+                            </tr>
+            
+                            <tr class="error-row">
+                                <td>ЧИПСЫ КУРИНЫЕ (СУХИЕ ПРЕМИУМ)</td>
+                                <td class="error-reason">Неизвестная причина</td>
+                                <td class="inventory-deviation">N/A</td>
+                                <td>0.0</td>
+                                <td>0.142</td>
+                                <td>0.142</td>
+                                <td>0.0</td>
+                            </tr>
+            
+                            <tr class="error-row">
+                                <td>конгрио кревеиочная</td>
+                                <td class="error-reason">Неизвестная причина</td>
+                                <td class="inventory-deviation">N/A</td>
+                                <td>0.0</td>
+                                <td>1.45</td>
+                                <td>1.45</td>
+                                <td>0.0</td>
+                            </tr>
+            
+                            <tr class="error-row">
+                                <td>ЛЕМОНЕМА Б/Г</td>
+                                <td class="error-reason">Неизвестная причина</td>
+                                <td class="inventory-deviation">N/A</td>
+                                <td>0.0</td>
+                                <td>0.592</td>
+                                <td>0.592</td>
+                                <td>0.0</td>
+                            </tr>
+            
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="footer">
+                    <p>Сгенерировано системой расчета коэффициентов усушки | 28.08.2025 19:00:27</p>
+                    <p>Для сортировки кликните по заголовку столбца | Для поиска используйте поле выше</p>
+                </div>
+            </div>
+            
+        <script>
+        function searchTable() {
+            const input = document.getElementById('searchInput');
+            const filter = input.value.toLowerCase();
+            const table = document.getElementById('dataTable');
+            const rows = table.getElementsByTagName('tr');
+            
+            for (let i = 1; i < rows.length; i++) {
+                const row = rows[i];
+                const cells = row.getElementsByTagName('td');
+                let found = false;
+                
+                for (let j = 0; j < cells.length; j++) {
+                    const cell = cells[j];
+                    if (cell) {
+                        const text = cell.textContent || cell.innerText;
+                        if (text.toLowerCase().indexOf(filter) > -1) {
+                            found = true;
+                            break;
+                        }
+                    }
+                }
+                
+                row.style.display = found ? '' : 'none';
+            }
+            
+            updateStats();
+        }
+        
+        function sortTable(columnIndex) {
+            const table = document.getElementById('dataTable');
+            const rows = Array.from(table.rows).slice(1);
+            const isAscending = table.getAttribute('data-sort-order') !== 'asc';
+            
+            rows.sort((a, b) => {
+                const aText = a.cells[columnIndex].textContent.trim();
+                const bText = b.cells[columnIndex].textContent.trim();
+                
+                // Try to sort as numbers first
+                const aNum = parseFloat(aText);
+                const bNum = parseFloat(bText);
+                
+                if (!isNaN(aNum) && !isNaN(bNum)) {
+                    return isAscending ? aNum - bNum : bNum - aNum;
+                }
+                
+                // Sort as strings
+                return isAscending ? 
+                    aText.localeCompare(bText, 'ru') : 
+                    bText.localeCompare(aText, 'ru');
+            });
+            
+            // Remove existing rows
+            while (table.rows.length > 1) {
+                table.deleteRow(1);
+            }
+            
+            // Add sorted rows
+            rows.forEach(row => table.appendChild(row));
+            
+            // Update sort order
+            table.setAttribute('data-sort-order', isAscending ? 'asc' : 'desc');
+            updateStats();
+        }
+        
+        function updateStats() {
+            const table = document.getElementById('dataTable');
+            const visibleRows = Array.from(table.rows).slice(1).filter(row => row.style.display !== 'none');
+            const totalRows = visibleRows.length;
+            
+            const accuracyCells = visibleRows.map(row => {
+                const cell = row.cells[5]; // Accuracy column
+                return cell ? parseFloat(cell.textContent) || 0 : 0;
+            });
+            
+            const avgAccuracy = accuracyCells.length > 0 ? 
+                accuracyCells.reduce((sum, acc) => sum + acc, 0) / accuracyCells.length : 0;
+            
+            document.getElementById('totalPositions').textContent = totalRows;
+            document.getElementById('avgAccuracy').textContent = avgAccuracy.toFixed(2);
+        }
+        
+        // Initialize stats on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            updateStats();
+        });
+        </script>
+        
+        </body>
+        </html>
+        

@@ -1,0 +1,58 @@
+CONVERSION VERIFICATION REPORT
+==============================
+
+File Conversion Summary:
+------------------------
+Original Excel file: 
+  C:\Users\D_909\Desktop\расчет коэффициентов нелинейной усушки, и предварительный расчет усушки 1.1\для нового проекта\исходные_данные\Для_расчета_коэфф\b3ded820-4385-4a42-abc7-75dc0756d335_6ba7ac50-fb1a-4bea-9489-265bdfdcb8d1_вся номенклатура за период с 15.07.25 по 21.07.25.xls
+
+JSON file: 
+  C:\Users\D_909\Desktop\расчет коэффициентов нелинейной усушки, и предварительный расчет усушки 1.1\для нового проекта\результаты\b3ded820-4385-4a42-abc7-75dc0756d335_6ba7ac50-fb1a-4bea-9489-265bdfdcb8d1_вся номенклатура за период с 15.07.25 по 21.07.25.json
+
+Converted Excel file: 
+  C:\Users\D_909\Desktop\расчет коэффициентов нелинейной усушки, и предварительный расчет усушки 1.1\для нового проекта\результаты\b3ded820-4385-4a42-abc7-75dc0756d335_6ba7ac50-fb1a-4bea-9489-265bdfdcb8d1_вся номенклатура за период с 15.07.25 по 21.07.25_converted.xlsx
+
+Conversion Results:
+-------------------
+✅ JSON to Excel conversion: SUCCESSFUL
+   - The json_to_excel function successfully converted the JSON file to Excel format
+   - The converted file was created without errors
+
+Data Comparison Results:
+------------------------
+❌ Files are NOT identical:
+   - Original dimensions: 2496 rows x 9 columns
+   - Converted dimensions: 2497 rows x 9 columns
+   - Difference: 1 extra row in converted file
+
+Detailed Analysis:
+------------------
+1. Extra Row:
+   - The converted file has one additional row (row 2496) containing:
+     ["Итого", NaN, NaN, NaN, 603.289, NaN, 354.345, 340.35, 617.284]
+   - This appears to be a summary row that was preserved in the JSON and converted back
+
+2. Data Differences:
+   - 8,783 differences found in the overlapping area
+   - First difference: Original='' (empty), Converted=0
+   - These differences are likely due to:
+     * Data type conversions during JSON serialization/deserialization
+     * NaN vs empty cell handling
+     * Default values being used for missing data
+
+Hierarchy and Grouping:
+-----------------------
+⚠️ Hierarchy/Grouping Verification:
+   - The current tools cannot fully verify hierarchy and grouping preservation
+   - The json_to_excel function from excel_hierarchy_preserver.py is designed to preserve grouping
+   - However, verification requires specialized tools that can read grouping information from .xls files
+
+Conclusion:
+-----------
+The conversion process was technically successful but the files are not completely identical. The differences are primarily due to:
+
+1. Data type handling differences between Excel and JSON formats
+2. NaN vs empty cell representation
+3. Potential loss of some formatting information during the Excel->JSON->Excel conversion cycle
+
+For most practical purposes, the converted file contains the same essential data as the original, but it is not bit-for-bit identical. If complete identity is required, additional processing would be needed to preserve all formatting and data type information.

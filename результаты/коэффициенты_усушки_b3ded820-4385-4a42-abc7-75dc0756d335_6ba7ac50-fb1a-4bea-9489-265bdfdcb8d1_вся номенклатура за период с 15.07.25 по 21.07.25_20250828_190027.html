@@ -1,0 +1,2602 @@
+
+        <!DOCTYPE html>
+        <html lang="ru">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Коэффициенты усушки (автоматический расчет)</title>
+            <style>
+                
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            margin: 0; 
+            padding: 0; 
+            background: linear-gradient(135deg, #f5f7fa 0%, #e4edf9 100%);
+            color: #333;
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+        .container { 
+            max-width: 1400px; 
+            margin: 20px auto; 
+            padding: 25px; 
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 12px 40px rgba(0,0,0,0.15);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .container::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 5px;
+            background: linear-gradient(90deg, #3498db, #2980b9);
+        }
+        .header {
+            background: linear-gradient(135deg, #2c3e50, #4a6491);
+            color: white;
+            padding: 40px;
+            border-radius: 15px 15px 0 0;
+            margin: -25px -25px 25px -25px;
+            position: relative;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.25);
+            overflow: hidden;
+        }
+        
+        .header::before {
+            content: "";
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 70%);
+            transform: rotate(30deg);
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 36px;
+            font-weight: 800;
+            letter-spacing: 0.5px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        .header .subtitle {
+            margin: 15px 0 0 0;
+            font-size: 20px;
+            opacity: 0.95;
+            font-weight: 300;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+        }
+        .header .file-info {
+            margin: 20px 0 0 0;
+            font-size: 18px;
+            opacity: 0.95;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 25px;
+        }
+        .header .file-info div {
+            background: rgba(255,255,255,0.2);
+            padding: 12px 20px;
+            border-radius: 25px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .search-container { 
+            margin-bottom: 35px; 
+            padding: 30px; 
+            background: #ffffff;
+            border-radius: 15px;
+            box-shadow: 0 6px 25px rgba(0,0,0,0.12);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            border: 1px solid #eef2f7;
+            border-top: 4px solid #3498db;
+        }
+        .search-input-container {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        .search-input { 
+            flex: 1;
+            min-width: 300px;
+            padding: 16px 22px; 
+            font-size: 18px; 
+            border: 2px solid #3498db; 
+            border-radius: 10px;
+            outline: none;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 10px rgba(52, 152, 219, 0.15);
+        }
+        .search-input:focus {
+            border-color: #2980b9;
+            box-shadow: 0 0 0 5px rgba(52, 152, 219, 0.4);
+            transform: translateY(-2px);
+        }
+        .search-label { 
+            font-weight: 700; 
+            font-size: 20px;
+            color: #2c3e50;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .stats { 
+            margin-top: 20px; 
+            font-size: 18px; 
+            color: #555;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        .stats span {
+            font-weight: 700;
+            color: #3498db;
+            padding: 8px 15px;
+            background: #e3f2fd;
+            border-radius: 25px;
+            box-shadow: 0 2px 5px rgba(52, 152, 219, 0.1);
+        }
+        .summary-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 25px;
+            margin-bottom: 35px;
+        }
+        .summary-card {
+            padding: 30px;
+            background: #ffffff;
+            border-left: 8px solid #3498db;
+            border-radius: 15px;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.12);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .summary-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 5px;
+            background: linear-gradient(90deg, #3498db, #2980b9);
+        }
+        
+        .summary-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 12px 30px rgba(0,0,0,0.2);
+        }
+        
+        .summary-card:hover .value {
+            transform: scale(1.05);
+        }
+        
+        .summary-card h3 {
+            margin: 0 0 15px 0;
+            font-size: 20px;
+            color: #2c3e50;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .summary-card .value {
+            font-size: 32px;
+            font-weight: 800;
+            color: #3498db;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+        
+        .summary-card .description {
+            font-size: 16px;
+            color: #7f8c8d;
+            margin-top: 10px;
+            text-align: center;
+        }
+        
+        .table-container {
+            background: #ffffff;
+            border-radius: 15px;
+            box-shadow: 0 6px 25px rgba(0,0,0,0.12);
+            overflow: hidden;
+            margin-bottom: 35px;
+            border: 1px solid #eef2f7;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 16px;
+        }
+        
+        th {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+            text-align: left;
+            padding: 18px 20px;
+            font-weight: 700;
+            cursor: pointer;
+            user-select: none;
+            position: sticky;
+            top: 0;
+            z-index: 5;
+        }
+        
+        th:hover {
+            background: linear-gradient(135deg, #2980b9, #2573a7);
+        }
+        
+        th::after {
+            content: "↕";
+            float: right;
+            opacity: 0.7;
+        }
+        
+        td {
+            padding: 16px 20px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        tr:nth-child(even) {
+            background-color: #f8f9fa;
+        }
+        
+        tr:hover {
+            background-color: #e3f2fd;
+            transform: scale(1.01);
+            transition: all 0.2s ease;
+        }
+        
+        .accuracy-high {
+            color: #27ae60;
+            font-weight: 700;
+        }
+        
+        .accuracy-medium {
+            color: #f39c12;
+            font-weight: 700;
+        }
+        
+        .accuracy-low {
+            color: #e74c3c;
+            font-weight: 700;
+        }
+        
+        .footer {
+            text-align: center;
+            margin-top: 40px;
+            padding: 25px;
+            color: #7f8c8d;
+            font-size: 16px;
+            border-top: 1px solid #eee;
+        }
+        
+        .footer a {
+            color: #3498db;
+            text-decoration: none;
+        }
+        
+        .footer a:hover {
+            text-decoration: underline;
+        }
+        
+        .error-row {
+            background-color: #ffebee;
+        }
+        
+        .error-row:hover {
+            background-color: #ffcdd2;
+        }
+        
+        .error-reason {
+            color: #c62828;
+            font-weight: 600;
+        }
+        
+        .inventory-deviation {
+            color: #f57c00;
+            font-weight: 600;
+        }
+        
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <div class="header">
+                    <h1>Коэффициенты усушки (автоматический расчет)</h1>
+                    <div class="subtitle">Система расчета нелинейных коэффициентов усушки</div>
+                    <div class="file-info">
+                        <div>📅 Дата отчета: 28.08.2025 19:00:27</div>
+                        <div>📊 Всего позиций: 212</div>
+                        <div>📈 Средняя точность: 100.00%</div>
+                    </div>
+                </div>
+                
+                <div class="search-container">
+                    <div class="search-input-container">
+                        <label class="search-label" for="searchInput">
+                            🔍 Поиск по номенклатуре:
+                        </label>
+                        <input type="text" id="searchInput" class="search-input" onkeyup="searchTable()" 
+                               placeholder="Введите название номенклатуры...">
+                    </div>
+                    <div class="stats">
+                        <span>📊 Всего позиций: <span id="totalPositions">212</span></span>
+                        <span>📈 Средняя точность: <span id="avgAccuracy">100.00</span>%</span>
+                    </div>
+                </div>
+                
+                <div class="summary-cards">
+                    <div class="summary-card">
+                        <h3>📊 Всего позиций</h3>
+                        <div class="value">212</div>
+                        <div class="description">Обработано номенклатур</div>
+                    </div>
+                    <div class="summary-card">
+                        <h3>📈 Средняя точность</h3>
+                        <div class="value">100.00%</div>
+                        <div class="description">Точность расчетов</div>
+                    </div>
+                    <div class="summary-card">
+                        <h3>⭐ Высокая точность</h3>
+                        <div class="value">173</div>
+                        <div class="description">Позиций с точностью ≥ 90%</div>
+                    </div>
+                    <div class="summary-card">
+                        <h3>⚠️ Низкая точность</h3>
+                        <div class="value">0</div>
+                        <div class="description">Позиций с точностью < 70%</div>
+                    </div>
+                </div>
+                
+                <div class="table-container">
+                    <table id="dataTable">
+                        <thead>
+                            <tr>
+                                <th onclick="sortTable(0)">Номенклатура</th>
+                                <th onclick="sortTable(1)">a</th>
+                                <th onclick="sortTable(2)">b</th>
+                                <th onclick="sortTable(3)">c</th>
+                                <th onclick="sortTable(4)">Дней хранения</th>
+                                <th onclick="sortTable(5)">Точность (%)</th>
+                                <th onclick="sortTable(6)">Модель</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+        
+                            <tr>
+                                <td>Монетка рыба (Рыба Дачная )</td>
+                                <td>0.100000</td>
+                                <td>0.052000</td>
+                                <td>-0.004000</td>
+                                <td>7</td>
+                                <td class="accuracy-high">100.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>ВЯЛЕНАЯ РЫБА (весовой товар)</td>
+                                <td>0.027000</td>
+                                <td>0.002000</td>
+                                <td>-0.000000</td>
+                                <td>7</td>
+                                <td class="accuracy-low">0.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>БЫЧКИ ВЯЛЕНЫЕ</td>
+                                <td>0.100000</td>
+                                <td>0.052000</td>
+                                <td>-0.004000</td>
+                                <td>7</td>
+                                <td class="accuracy-high">100.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>ВОБЛА АСТРАХАНЬ вяленая</td>
+                                <td>0.100000</td>
+                                <td>0.052000</td>
+                                <td>-0.004000</td>
+                                <td>7</td>
+                                <td class="accuracy-high">100.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>ВОБЛА ОЧИЩЕННАЯ</td>
+                                <td>0.027000</td>
+                                <td>0.002000</td>
+                                <td>-0.000000</td>
+                                <td>7</td>
+                                <td class="accuracy-low">0.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>КАМБАЛА ВЯЛ БЕЗ ИКРЫ</td>
+                                <td>0.100000</td>
+                                <td>0.052000</td>
+                                <td>-0.004000</td>
+                                <td>7</td>
+                                <td class="accuracy-high">100.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>КАМБАЛА С ИКРОЙ ВЯЛЕНАЯ</td>
+                                <td>0.100000</td>
+                                <td>0.052000</td>
+                                <td>-0.004000</td>
+                                <td>7</td>
+                                <td class="accuracy-high">100.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>КОРЮШКА С ИКРОЙ (вяленая)</td>
+                                <td>0.100000</td>
+                                <td>0.052000</td>
+                                <td>-0.004000</td>
+                                <td>7</td>
+                                <td class="accuracy-high">100.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>ЛЕЩ ЦЫМЛЯНСКИЙ ВЯЛЕНЫЙ</td>
+                                <td>0.100000</td>
+                                <td>0.052000</td>
+                                <td>-0.004000</td>
+                                <td>7</td>
+                                <td class="accuracy-high">100.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>ПЕЛЯДЬ ВЯЛЕНАЯ</td>
+                                <td>0.100000</td>
+                                <td>0.052000</td>
+                                <td>-0.004000</td>
+                                <td>7</td>
+                                <td class="accuracy-high">100.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>СИНЕЦ ВЯЛЕНЫЙ</td>
+                                <td>0.027000</td>
+                                <td>0.002000</td>
+                                <td>-0.000000</td>
+                                <td>7</td>
+                                <td class="accuracy-low">0.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>СУДАК ВЯЛЕНЫЙ</td>
+                                <td>0.100000</td>
+                                <td>0.052000</td>
+                                <td>-0.004000</td>
+                                <td>7</td>
+                                <td class="accuracy-high">100.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>СЫР КОСИЧКА</td>
+                                <td>0.100000</td>
+                                <td>0.052000</td>
+                                <td>-0.004000</td>
+                                <td>7</td>
+                                <td class="accuracy-high">100.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>ТАРАНЬ ВЯЛЕНАЯ</td>
+                                <td>0.100000</td>
+                                <td>0.052000</td>
+                                <td>-0.004000</td>
+                                <td>7</td>
+                                <td class="accuracy-high">100.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>ЧЕХОНЬ ВЯЛЕНАЯ</td>
+                                <td>0.027000</td>
+                                <td>0.002000</td>
+                                <td>-0.000000</td>
+                                <td>7</td>
+                                <td class="accuracy-low">0.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>ЩУКА ВЯЛЕНАЯ</td>
+                                <td>0.100000</td>
+                                <td>0.052000</td>
+                                <td>-0.004000</td>
+                                <td>7</td>
+                                <td class="accuracy-high">100.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>ГОРЯЧЕГО КОПЧЕНИЯ (весовой товар)</td>
+                                <td>0.100000</td>
+                                <td>0.052000</td>
+                                <td>-0.004000</td>
+                                <td>7</td>
+                                <td class="accuracy-high">100.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>БЕЛОРЫБИЦА Г/К</td>
+                                <td>0.100000</td>
+                                <td>0.052000</td>
+                                <td>-0.004000</td>
+                                <td>7</td>
+                                <td class="accuracy-high">100.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>ГОЛОВЫ СЁМГИ Г/К</td>
+                                <td>0.027000</td>
+                                <td>0.002000</td>
+                                <td>-0.000000</td>
+                                <td>7</td>
+                                <td class="accuracy-low">0.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>ГОРБУША Г/К</td>
+                                <td>0.100000</td>
+                                <td>0.052000</td>
+                                <td>-0.004000</td>
+                                <td>7</td>
+                                <td class="accuracy-high">100.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>ДОРАДО Г/К</td>
+                                <td>0.100000</td>
+                                <td>0.052000</td>
+                                <td>-0.004000</td>
+                                <td>7</td>
+                                <td class="accuracy-high">100.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>КАМБАЛА (горячего копчения)</td>
+                                <td>0.100000</td>
+                                <td>0.052000</td>
+                                <td>-0.004000</td>
+                                <td>7</td>
+                                <td class="accuracy-high">100.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>ЛЕЩ Г/К</td>
+                                <td>0.100000</td>
+                                <td>0.052000</td>
+                                <td>-0.004000</td>
+                                <td>7</td>
+                                <td class="accuracy-high">100.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>РУЛЕТ СЕМГИ Г/К</td>
+                                <td>0.100000</td>
+                                <td>0.052000</td>
+                                <td>-0.004000</td>
+                                <td>7</td>
+                                <td class="accuracy-high">100.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>СИГ Г/К</td>
+                                <td>0.100000</td>
+                                <td>0.052000</td>
+                                <td>-0.004000</td>
+                                <td>7</td>
+                                <td class="accuracy-high">100.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>СКУМБРИЯ Г/К</td>
+                                <td>0.100000</td>
+                                <td>0.052000</td>
+                                <td>-0.004000</td>
+                                <td>7</td>
+                                <td class="accuracy-high">100.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>ХРЕБТЫ СЕМГИ Г\К (ПРЕМИУМ)</td>
+                                <td>0.100000</td>
+                                <td>0.052000</td>
+                                <td>-0.004000</td>
+                                <td>7</td>
+                                <td class="accuracy-high">100.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>ЖАРЕННАЯ РЫБА (весовой товар)</td>
+                                <td>0.100000</td>
+                                <td>0.052000</td>
+                                <td>-0.004000</td>
+                                <td>7</td>
+                                <td class="accuracy-high">100.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>КОТЛЕТЫ из ЩУКИ жареные</td>
+                                <td>0.100000</td>
+                                <td>0.052000</td>
+                                <td>-0.004000</td>
+                                <td>7</td>
+                                <td class="accuracy-high">100.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>МОЙВА ЖАРЕНАЯ</td>
+                                <td>0.100000</td>
+                                <td>0.052000</td>
+                                <td>-0.004000</td>
+                                <td>7</td>
+                                <td class="accuracy-high">100.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>НАВАГА ЖАРЕНАЯ</td>
+                                <td>0.100000</td>
+                                <td>0.052000</td>
+                                <td>-0.004000</td>
+                                <td>7</td>
+                                <td class="accuracy-high">100.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>КОПЧЕННОСТИ Х.К (весовой товар)</td>
+                                <td>0.100000</td>
+                                <td>0.052000</td>
+                                <td>-0.004000</td>
+                                <td>7</td>
+                                <td class="accuracy-high">100.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>БРЮШКИ КЕТЫ Х/К</td>
+                                <td>0.100000</td>
+                                <td>0.052000</td>
+                                <td>-0.004000</td>
+                                <td>7</td>
+                                <td class="accuracy-high">100.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>БРЮШКИ СЕМГИ Х/К</td>
+                                <td>0.100000</td>
+                                <td>0.052000</td>
+                                <td>-0.004000</td>
+                                <td>7</td>
+                                <td class="accuracy-high">100.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>БРЮШКИ ФОРЕЛИ Х/К</td>
+                                <td>0.100000</td>
+                                <td>0.052000</td>
+                                <td>-0.004000</td>
+                                <td>7</td>
+                                <td class="accuracy-high">100.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>ВОМЕР Х/К</td>
+                                <td>0.100000</td>
+                                <td>0.052000</td>
+                                <td>-0.004000</td>
+                                <td>7</td>
+                                <td class="accuracy-high">100.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>ГОРБУША Х/К</td>
+                                <td>0.027000</td>
+                                <td>0.002000</td>
+                                <td>-0.000000</td>
+                                <td>7</td>
+                                <td class="accuracy-low">0.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>ЖЕРЕХ ХОЛ КОП</td>
+                                <td>0.100000</td>
+                                <td>0.052000</td>
+                                <td>-0.004000</td>
+                                <td>7</td>
+                                <td class="accuracy-high">100.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>ИВАСИ Х/К</td>
+                                <td>0.100000</td>
+                                <td>0.052000</td>
+                                <td>-0.004000</td>
+                                <td>7</td>
+                                <td class="accuracy-high">100.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>КЕТА Х/К</td>
+                                <td>0.100000</td>
+                                <td>0.052000</td>
+                                <td>-0.004000</td>
+                                <td>7</td>
+                                <td class="accuracy-high">100.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>КОРЮШКА Х/К</td>
+                                <td>0.100000</td>
+                                <td>0.052000</td>
+                                <td>-0.004000</td>
+                                <td>7</td>
+                                <td class="accuracy-high">100.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>МАСЛЕНАЯ Х/К</td>
+                                <td>0.100000</td>
+                                <td>0.052000</td>
+                                <td>-0.004000</td>
+                                <td>7</td>
+                                <td class="accuracy-high">100.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>МОЙВА Х/К</td>
+                                <td>0.100000</td>
+                                <td>0.052000</td>
+                                <td>-0.004000</td>
+                                <td>7</td>
+                                <td class="accuracy-high">100.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>НЕРКА Х/К</td>
+                                <td>0.027000</td>
+                                <td>0.002000</td>
+                                <td>-0.000000</td>
+                                <td>7</td>
+                                <td class="accuracy-low">0.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>ОКУНЬ Х/К БАБОЧКА</td>
+                                <td>0.100000</td>
+                                <td>0.052000</td>
+                                <td>-0.004000</td>
+                                <td>7</td>
+                                <td class="accuracy-high">100.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>СКУМБРИЯ Х/К</td>
+                                <td>0.100000</td>
+                                <td>0.052000</td>
+                                <td>-0.004000</td>
+                                <td>7</td>
+                                <td class="accuracy-high">100.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>СЛАЙСЫ КИЖУЧА</td>
+                                <td>0.100000</td>
+                                <td>0.052000</td>
+                                <td>-0.004000</td>
+                                <td>7</td>
+                                <td class="accuracy-high">100.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>СОЛОМКА КИЖУЧА</td>
+                                <td>0.100000</td>
+                                <td>0.052000</td>
+                                <td>-0.004000</td>
+                                <td>7</td>
+                                <td class="accuracy-high">100.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>СЫР "ОХОТНИЧИЙ" копчёный</td>
+                                <td>0.100000</td>
+                                <td>0.052000</td>
+                                <td>-0.004000</td>
+                                <td>7</td>
+                                <td class="accuracy-high">100.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>СЫР БЕЛЫЙ КОПЧЕНЫЙ</td>
+                                <td>0.100000</td>
+                                <td>0.052000</td>
+                                <td>-0.004000</td>
+                                <td>7</td>
+                                <td class="accuracy-high">100.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>ТОЛСТОЛОБ Х\К (БАБОЧКА)</td>
+                                <td>0.027000</td>
+                                <td>0.002000</td>
+                                <td>-0.000000</td>
+                                <td>7</td>
+                                <td class="accuracy-low">0.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>ТУНЕЦ Х/К</td>
+                                <td>0.027000</td>
+                                <td>0.002000</td>
+                                <td>-0.000000</td>
+                                <td>7</td>
+                                <td class="accuracy-low">0.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>ФОРЕЛЬ БАЛЫК Х/К</td>
+                                <td>0.100000</td>
+                                <td>0.052000</td>
+                                <td>-0.004000</td>
+                                <td>7</td>
+                                <td class="accuracy-high">100.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>ЮКОЛА ГОРБУШИ (СУШ)</td>
+                                <td>0.100000</td>
+                                <td>0.052000</td>
+                                <td>-0.004000</td>
+                                <td>7</td>
+                                <td class="accuracy-high">100.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>ЮКОЛА ГОРБУШИ Х/К</td>
+                                <td>0.100000</td>
+                                <td>0.052000</td>
+                                <td>-0.004000</td>
+                                <td>7</td>
+                                <td class="accuracy-high">100.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>ЮКОЛА СОМА Х/К</td>
+                                <td>0.027000</td>
+                                <td>0.002000</td>
+                                <td>-0.000000</td>
+                                <td>7</td>
+                                <td class="accuracy-low">0.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>КРЕВЕТКИ</td>
+                                <td>0.027000</td>
+                                <td>0.002000</td>
+                                <td>-0.000000</td>
+                                <td>7</td>
+                                <td class="accuracy-low">0.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>КЛЕШНЯ КРАБА</td>
+                                <td>0.100000</td>
+                                <td>0.052000</td>
+                                <td>-0.004000</td>
+                                <td>7</td>
+                                <td class="accuracy-high">100.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>КРАБОВЫЕ ПАЛОЧКИ заморож РОК 150+</td>
+                                <td>0.100000</td>
+                                <td>0.052000</td>
+                                <td>-0.004000</td>
+                                <td>7</td>
+                                <td class="accuracy-high">100.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>КРЕВЕТКИ 120+</td>
+                                <td>0.027000</td>
+                                <td>0.002000</td>
+                                <td>-0.000000</td>
+                                <td>7</td>
+                                <td class="accuracy-low">0.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>Пересортица 000000000000028 от 20.07.2025 12:00:00</td>
+                                <td>0.027000</td>
+                                <td>0.002000</td>
+                                <td>-0.000000</td>
+                                <td>7</td>
+                                <td class="accuracy-low">0.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>КРЕВЕТКИ 80/100 МАГАДАН</td>
+                                <td>0.100000</td>
+                                <td>0.052000</td>
+                                <td>-0.004000</td>
+                                <td>7</td>
+                                <td class="accuracy-high">100.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>КРЕВЕТКИ 90 + северные</td>
+                                <td>0.027000</td>
+                                <td>0.002000</td>
+                                <td>-0.000000</td>
+                                <td>7</td>
+                                <td class="accuracy-low">0.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>Пересортица 000000000000028 от 20.07.2025 12:00:00</td>
+                                <td>0.100000</td>
+                                <td>0.052000</td>
+                                <td>-0.004000</td>
+                                <td>7</td>
+                                <td class="accuracy-high">100.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>МИДИИ ГОЛУБЫЕ 400-500</td>
+                                <td>0.100000</td>
+                                <td>0.052000</td>
+                                <td>-0.004000</td>
+                                <td>7</td>
+                                <td class="accuracy-high">100.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>САЛАТЫ (весовой товар)</td>
+                                <td>0.027000</td>
+                                <td>0.002000</td>
+                                <td>-0.000000</td>
+                                <td>7</td>
+                                <td class="accuracy-low">0.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>БАКЛАЖАНЫ ЖАРЕННЫЕ</td>
+                                <td>0.100000</td>
+                                <td>0.052000</td>
+                                <td>-0.004000</td>
+                                <td>7</td>
+                                <td class="accuracy-high">100.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>ГРЕБЕШКИ (ПО КОРЕЙСКИ)</td>
+                                <td>0.100000</td>
+                                <td>0.052000</td>
+                                <td>-0.004000</td>
+                                <td>7</td>
+                                <td class="accuracy-high">100.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>ИМБИРЬ</td>
+                                <td>0.100000</td>
+                                <td>0.052000</td>
+                                <td>-0.004000</td>
+                                <td>7</td>
+                                <td class="accuracy-high">100.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>ОСЬМИНОГ в рассоле</td>
+                                <td>0.100000</td>
+                                <td>0.052000</td>
+                                <td>-0.004000</td>
+                                <td>7</td>
+                                <td class="accuracy-high">100.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>ПЕРЕЦ КРАСНЫЙ ФАРШИРОВАННЫЙ СЫРОМ</td>
+                                <td>0.100000</td>
+                                <td>0.052000</td>
+                                <td>-0.004000</td>
+                                <td>7</td>
+                                <td class="accuracy-high">100.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>РЫБА ХЕ острая</td>
+                                <td>0.100000</td>
+                                <td>0.052000</td>
+                                <td>-0.004000</td>
+                                <td>7</td>
+                                <td class="accuracy-high">100.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>САЛАТ ДАЛЬНЕВОСТОЧНЫЙ</td>
+                                <td>0.100000</td>
+                                <td>0.052000</td>
+                                <td>-0.004000</td>
+                                <td>7</td>
+                                <td class="accuracy-high">100.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>СОУС КУНЖУТНЫЙ</td>
+                                <td>0.100000</td>
+                                <td>0.052000</td>
+                                <td>-0.004000</td>
+                                <td>7</td>
+                                <td class="accuracy-high">100.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>СПАРЖА</td>
+                                <td>0.027000</td>
+                                <td>0.002000</td>
+                                <td>-0.000000</td>
+                                <td>7</td>
+                                <td class="accuracy-low">0.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>ЧУКА</td>
+                                <td>0.100000</td>
+                                <td>0.052000</td>
+                                <td>-0.004000</td>
+                                <td>7</td>
+                                <td class="accuracy-high">100.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>Щупальца КАЛЬМАРА в масле вес.</td>
+                                <td>0.100000</td>
+                                <td>0.052000</td>
+                                <td>-0.004000</td>
+                                <td>7</td>
+                                <td class="accuracy-high">100.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>СОЛЕНИЯ (весовой товар)</td>
+                                <td>0.100000</td>
+                                <td>0.052000</td>
+                                <td>-0.004000</td>
+                                <td>7</td>
+                                <td class="accuracy-high">100.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>ИКРА ПАЛТУСА весовая</td>
+                                <td>0.100000</td>
+                                <td>0.052000</td>
+                                <td>-0.004000</td>
+                                <td>7</td>
+                                <td class="accuracy-high">100.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>ИКРА СЕЛЬДИ</td>
+                                <td>0.027000</td>
+                                <td>0.002000</td>
+                                <td>-0.000000</td>
+                                <td>7</td>
+                                <td class="accuracy-low">0.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>КИЛЬКА П/П</td>
+                                <td>0.100000</td>
+                                <td>0.052000</td>
+                                <td>-0.004000</td>
+                                <td>7</td>
+                                <td class="accuracy-high">100.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>МАСЛИНЫ Б/К ГРЕЦИЯ вес</td>
+                                <td>0.027000</td>
+                                <td>0.002000</td>
+                                <td>-0.000000</td>
+                                <td>7</td>
+                                <td class="accuracy-low">0.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>МАСЛИНЫ КОРОЛЕВСКИЕ ВЯЛЕННЫЕ КРУПНЫЕ, ТУРЦИЯ</td>
+                                <td>0.100000</td>
+                                <td>0.052000</td>
+                                <td>-0.004000</td>
+                                <td>7</td>
+                                <td class="accuracy-high">100.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>МИДИИ В МАСЛЕ вес</td>
+                                <td>0.100000</td>
+                                <td>0.052000</td>
+                                <td>-0.004000</td>
+                                <td>7</td>
+                                <td class="accuracy-high">100.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>МОРСКОЙ КОКТЕЛЬ в Масле</td>
+                                <td>0.100000</td>
+                                <td>0.052000</td>
+                                <td>-0.004000</td>
+                                <td>7</td>
+                                <td class="accuracy-high">100.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>ОЛИВКИ Б/К ГРЕЦИЯ вес</td>
+                                <td>0.100000</td>
+                                <td>0.052000</td>
+                                <td>-0.004000</td>
+                                <td>7</td>
+                                <td class="accuracy-high">100.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>ОЛИВКИ КРУПНЫЕ С/К ГРЕЦИЯ вес</td>
+                                <td>0.100000</td>
+                                <td>0.052000</td>
+                                <td>-0.004000</td>
+                                <td>7</td>
+                                <td class="accuracy-high">100.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>ОСЬМИНОГ В МАСЛЕ вес</td>
+                                <td>0.100000</td>
+                                <td>0.052000</td>
+                                <td>-0.004000</td>
+                                <td>7</td>
+                                <td class="accuracy-high">100.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>СЕЛЬДЬ С/С</td>
+                                <td>0.100000</td>
+                                <td>0.052000</td>
+                                <td>-0.004000</td>
+                                <td>7</td>
+                                <td class="accuracy-high">100.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>СЕМГА С/С ВЕСОВАЯ СЕРЕДИНА</td>
+                                <td>0.100000</td>
+                                <td>0.052000</td>
+                                <td>-0.004000</td>
+                                <td>7</td>
+                                <td class="accuracy-high">100.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>ТОМАТЫ ВЯЛЕНЫЕ вес</td>
+                                <td>0.100000</td>
+                                <td>0.052000</td>
+                                <td>-0.004000</td>
+                                <td>7</td>
+                                <td class="accuracy-high">100.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>ФУНЧЕЗА</td>
+                                <td>0.027000</td>
+                                <td>0.002000</td>
+                                <td>-0.000000</td>
+                                <td>7</td>
+                                <td class="accuracy-low">0.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>СОУС ТЕРИЯКИ весовой</td>
+                                <td>0.027000</td>
+                                <td>0.002000</td>
+                                <td>-0.000000</td>
+                                <td>7</td>
+                                <td class="accuracy-low">0.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>СТЕЙКИ СПИНКИ</td>
+                                <td>0.100000</td>
+                                <td>0.052000</td>
+                                <td>-0.004000</td>
+                                <td>7</td>
+                                <td class="accuracy-high">100.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>КУБИКИ МИНТАЯ</td>
+                                <td>0.100000</td>
+                                <td>0.052000</td>
+                                <td>-0.004000</td>
+                                <td>7</td>
+                                <td class="accuracy-high">100.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>КУБИКИ ТРЕСКИ</td>
+                                <td>0.100000</td>
+                                <td>0.052000</td>
+                                <td>-0.004000</td>
+                                <td>7</td>
+                                <td class="accuracy-high">100.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>СТЕЙКИ ЗУБАТКИ (С/З)</td>
+                                <td>0.100000</td>
+                                <td>0.052000</td>
+                                <td>-0.004000</td>
+                                <td>7</td>
+                                <td class="accuracy-high">100.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>СТЕЙКИ КЕТЫ</td>
+                                <td>0.100000</td>
+                                <td>0.052000</td>
+                                <td>-0.004000</td>
+                                <td>7</td>
+                                <td class="accuracy-high">100.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>СТЕЙКИ СЕМГИ (ЗАМОРОЖ)</td>
+                                <td>0.100000</td>
+                                <td>0.052000</td>
+                                <td>-0.004000</td>
+                                <td>7</td>
+                                <td class="accuracy-high">100.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>СТЕЙКИ ТРЕСКИ</td>
+                                <td>0.100000</td>
+                                <td>0.052000</td>
+                                <td>-0.004000</td>
+                                <td>7</td>
+                                <td class="accuracy-high">100.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>Стейки ФОРЕЛИ заморож. ВЕС</td>
+                                <td>0.100000</td>
+                                <td>0.052000</td>
+                                <td>-0.004000</td>
+                                <td>7</td>
+                                <td class="accuracy-high">100.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>СУШКА</td>
+                                <td>0.100000</td>
+                                <td>0.052000</td>
+                                <td>-0.004000</td>
+                                <td>7</td>
+                                <td class="accuracy-high">100.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>АНЧОУСЫ ВЯЛЕНЫЕ</td>
+                                <td>0.100000</td>
+                                <td>0.052000</td>
+                                <td>-0.004000</td>
+                                <td>7</td>
+                                <td class="accuracy-high">100.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>АРАХИС  (ХОЛОДЕЦ/ХРЕН)</td>
+                                <td>0.100000</td>
+                                <td>0.052000</td>
+                                <td>-0.004000</td>
+                                <td>7</td>
+                                <td class="accuracy-high">100.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>АРАХИС "АДЖИКА"</td>
+                                <td>0.100000</td>
+                                <td>0.052000</td>
+                                <td>-0.004000</td>
+                                <td>7</td>
+                                <td class="accuracy-high">100.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>АРАХИС БЕКОН</td>
+                                <td>0.100000</td>
+                                <td>0.052000</td>
+                                <td>-0.004000</td>
+                                <td>7</td>
+                                <td class="accuracy-high">100.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>АРАХИС в корочке 4 СЫРА</td>
+                                <td>0.100000</td>
+                                <td>0.052000</td>
+                                <td>-0.004000</td>
+                                <td>7</td>
+                                <td class="accuracy-high">100.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>АРАХИС в корочке ЧИЛИ</td>
+                                <td>0.100000</td>
+                                <td>0.052000</td>
+                                <td>-0.004000</td>
+                                <td>7</td>
+                                <td class="accuracy-high">100.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>АРАХИС В КОРОЧКЕ ШАШЛЫК</td>
+                                <td>0.100000</td>
+                                <td>0.052000</td>
+                                <td>-0.004000</td>
+                                <td>7</td>
+                                <td class="accuracy-high">100.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>Арахис васаби</td>
+                                <td>0.027000</td>
+                                <td>0.002000</td>
+                                <td>-0.000000</td>
+                                <td>7</td>
+                                <td class="accuracy-low">0.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>АРАХИС ЖАРЕНЫЙ</td>
+                                <td>0.100000</td>
+                                <td>0.052000</td>
+                                <td>-0.004000</td>
+                                <td>7</td>
+                                <td class="accuracy-high">100.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>АРАХИС со вкусом СЫР-ЧЕСНОК</td>
+                                <td>0.100000</td>
+                                <td>0.052000</td>
+                                <td>-0.004000</td>
+                                <td>7</td>
+                                <td class="accuracy-high">100.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>ГРЕНКИ  со вкусом АДЖИКА</td>
+                                <td>0.100000</td>
+                                <td>0.052000</td>
+                                <td>-0.004000</td>
+                                <td>7</td>
+                                <td class="accuracy-high">100.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>ГРЕНКИ "БАРНЫЕ с ЧЕСНОКОМ"</td>
+                                <td>0.100000</td>
+                                <td>0.052000</td>
+                                <td>-0.004000</td>
+                                <td>7</td>
+                                <td class="accuracy-high">100.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>ГРЕНКИ "КРАСНАЯ ИКРА" РАЗВЕС</td>
+                                <td>0.100000</td>
+                                <td>0.052000</td>
+                                <td>-0.004000</td>
+                                <td>7</td>
+                                <td class="accuracy-high">100.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>ГРЕНКИ "МАРИНОВАНЫЕ ОГУРЦЫ"</td>
+                                <td>0.100000</td>
+                                <td>0.052000</td>
+                                <td>-0.004000</td>
+                                <td>7</td>
+                                <td class="accuracy-high">100.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>ГРЕНКИ "САЛО/ГОРЧИЦА" РАЗВЕС</td>
+                                <td>0.100000</td>
+                                <td>0.052000</td>
+                                <td>-0.004000</td>
+                                <td>7</td>
+                                <td class="accuracy-high">100.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>ГРЕНКИ "ТАЙСКИЙ ПЕРЕЦ"</td>
+                                <td>0.027000</td>
+                                <td>0.002000</td>
+                                <td>-0.000000</td>
+                                <td>7</td>
+                                <td class="accuracy-low">0.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>ГРЕНКИ "ХОЛОДЕЦ/ХРЕН"</td>
+                                <td>0.100000</td>
+                                <td>0.052000</td>
+                                <td>-0.004000</td>
+                                <td>7</td>
+                                <td class="accuracy-high">100.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>ГРЕНКИ ПШЕНИЧНЫЕ "СЕМГА"</td>
+                                <td>0.100000</td>
+                                <td>0.052000</td>
+                                <td>-0.004000</td>
+                                <td>7</td>
+                                <td class="accuracy-high">100.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>ГРЕНКИ С "ЧЕСНОКОМ"</td>
+                                <td>0.100000</td>
+                                <td>0.052000</td>
+                                <td>-0.004000</td>
+                                <td>7</td>
+                                <td class="accuracy-high">100.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>ГРЕНКИ СНАПЫ ЧЕСНОК</td>
+                                <td>0.100000</td>
+                                <td>0.052000</td>
+                                <td>-0.004000</td>
+                                <td>7</td>
+                                <td class="accuracy-high">100.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>ГРЕНКИ ТОМАТ/ЗЕЛЕНЬ</td>
+                                <td>0.100000</td>
+                                <td>0.052000</td>
+                                <td>-0.004000</td>
+                                <td>7</td>
+                                <td class="accuracy-high">100.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>Гренки ФИРМЕННЫЕ баварские/колбаски</td>
+                                <td>0.100000</td>
+                                <td>0.052000</td>
+                                <td>-0.004000</td>
+                                <td>7</td>
+                                <td class="accuracy-high">100.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>Гренки ФИРМЕННЫЕ буженина/холодец</td>
+                                <td>0.027000</td>
+                                <td>0.002000</td>
+                                <td>-0.000000</td>
+                                <td>7</td>
+                                <td class="accuracy-low">0.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>Гренки ФИРМЕННЫЕ камчатский краб</td>
+                                <td>0.100000</td>
+                                <td>0.052000</td>
+                                <td>-0.004000</td>
+                                <td>7</td>
+                                <td class="accuracy-high">100.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>Гренки ФИРМЕННЫЕ сметана и зелень</td>
+                                <td>0.100000</td>
+                                <td>0.052000</td>
+                                <td>-0.004000</td>
+                                <td>7</td>
+                                <td class="accuracy-high">100.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>Гренки ФИРМЕННЫЕ телятина/горчица</td>
+                                <td>0.100000</td>
+                                <td>0.052000</td>
+                                <td>-0.004000</td>
+                                <td>7</td>
+                                <td class="accuracy-high">100.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>Гренки ФИРМЕННЫЕ холодец горчица</td>
+                                <td>0.100000</td>
+                                <td>0.052000</td>
+                                <td>-0.004000</td>
+                                <td>7</td>
+                                <td class="accuracy-high">100.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>Гренки ФИРМЕННЫЕ чеснок зелень</td>
+                                <td>0.100000</td>
+                                <td>0.052000</td>
+                                <td>-0.004000</td>
+                                <td>7</td>
+                                <td class="accuracy-high">100.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>ЖЕЛТЫЙ ПОЛОСАТИК</td>
+                                <td>0.027000</td>
+                                <td>0.002000</td>
+                                <td>-0.000000</td>
+                                <td>7</td>
+                                <td class="accuracy-low">0.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>ИКРА ВОБЛЫ (вяленная)</td>
+                                <td>0.100000</td>
+                                <td>0.052000</td>
+                                <td>-0.004000</td>
+                                <td>7</td>
+                                <td class="accuracy-high">100.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>ИКРА КАМБАЛЫ ВЯЛ</td>
+                                <td>0.100000</td>
+                                <td>0.052000</td>
+                                <td>-0.004000</td>
+                                <td>7</td>
+                                <td class="accuracy-high">100.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>ИКРА МИНТАЯ (сушеная)</td>
+                                <td>0.027000</td>
+                                <td>0.002000</td>
+                                <td>-0.000000</td>
+                                <td>7</td>
+                                <td class="accuracy-low">0.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>ИКРА ФОРЕЛИ (ВЯЛЕНАЯ)</td>
+                                <td>0.027000</td>
+                                <td>0.002000</td>
+                                <td>-0.000000</td>
+                                <td>7</td>
+                                <td class="accuracy-low">0.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>КАЛЬМАР СТРУЖКА</td>
+                                <td>0.100000</td>
+                                <td>0.052000</td>
+                                <td>-0.004000</td>
+                                <td>7</td>
+                                <td class="accuracy-high">100.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>КАМБАЛКА ДЕЛИКАТЕСНАЯ</td>
+                                <td>0.027000</td>
+                                <td>0.002000</td>
+                                <td>-0.000000</td>
+                                <td>7</td>
+                                <td class="accuracy-low">0.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>КОЛЬЦА КАЛЬМАРА КОПЧЁНЫЕ</td>
+                                <td>0.100000</td>
+                                <td>0.052000</td>
+                                <td>-0.004000</td>
+                                <td>7</td>
+                                <td class="accuracy-high">100.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>КОЛЬЦА КРАБА РОЗОВЫЕ</td>
+                                <td>0.100000</td>
+                                <td>0.052000</td>
+                                <td>-0.004000</td>
+                                <td>7</td>
+                                <td class="accuracy-high">100.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>КРАБ ПО ШАНХАЙСКИ</td>
+                                <td>0.100000</td>
+                                <td>0.052000</td>
+                                <td>-0.004000</td>
+                                <td>7</td>
+                                <td class="accuracy-high">100.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>КРАБ РОЗОВЫЙ</td>
+                                <td>0.100000</td>
+                                <td>0.052000</td>
+                                <td>-0.004000</td>
+                                <td>7</td>
+                                <td class="accuracy-high">100.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>КРЕВЕТКИ СУШЕНЫЕ</td>
+                                <td>0.100000</td>
+                                <td>0.052000</td>
+                                <td>-0.004000</td>
+                                <td>7</td>
+                                <td class="accuracy-high">100.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>КУКУРУЗА жареная со вкусом БАРБЕКЮ</td>
+                                <td>0.100000</td>
+                                <td>0.052000</td>
+                                <td>-0.004000</td>
+                                <td>7</td>
+                                <td class="accuracy-high">100.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>МИДИИ ВЯЛЕННЫЕ</td>
+                                <td>0.100000</td>
+                                <td>0.052000</td>
+                                <td>-0.004000</td>
+                                <td>7</td>
+                                <td class="accuracy-high">100.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>МИНТАЙ СТРУЖКА</td>
+                                <td>0.100000</td>
+                                <td>0.052000</td>
+                                <td>-0.004000</td>
+                                <td>7</td>
+                                <td class="accuracy-high">100.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>МЯСО КРАБА</td>
+                                <td>0.100000</td>
+                                <td>0.052000</td>
+                                <td>-0.004000</td>
+                                <td>7</td>
+                                <td class="accuracy-high">100.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>ПАУТИНКА КАЛЬМАРА черная.</td>
+                                <td>0.100000</td>
+                                <td>0.052000</td>
+                                <td>-0.004000</td>
+                                <td>7</td>
+                                <td class="accuracy-high">100.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>ПАУТИНКА СЕМГИ</td>
+                                <td>0.100000</td>
+                                <td>0.052000</td>
+                                <td>-0.004000</td>
+                                <td>7</td>
+                                <td class="accuracy-high">100.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>ПАУТИНКА ФОРЕЛИ</td>
+                                <td>0.100000</td>
+                                <td>0.052000</td>
+                                <td>-0.004000</td>
+                                <td>7</td>
+                                <td class="accuracy-high">100.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>СПИНКИ ТРЕСКИ (сушка)</td>
+                                <td>0.100000</td>
+                                <td>0.052000</td>
+                                <td>-0.004000</td>
+                                <td>7</td>
+                                <td class="accuracy-high">100.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>СТЕЙКИ ГОРБУШИ ВЯЛЕННЫЕ</td>
+                                <td>0.027000</td>
+                                <td>0.002000</td>
+                                <td>-0.000000</td>
+                                <td>7</td>
+                                <td class="accuracy-low">0.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>СЫР БОЧОНОК</td>
+                                <td>0.100000</td>
+                                <td>0.052000</td>
+                                <td>-0.004000</td>
+                                <td>7</td>
+                                <td class="accuracy-high">100.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>СЫР ЖАРЕНЫЙ "КНУТЫ"</td>
+                                <td>0.100000</td>
+                                <td>0.052000</td>
+                                <td>-0.004000</td>
+                                <td>7</td>
+                                <td class="accuracy-high">100.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>СЫР КОСИЧКА (с ПАПРИКОЙ)</td>
+                                <td>0.100000</td>
+                                <td>0.052000</td>
+                                <td>-0.004000</td>
+                                <td>7</td>
+                                <td class="accuracy-high">100.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>СЫРНЫЕ ШАРИКИ</td>
+                                <td>0.027000</td>
+                                <td>0.002000</td>
+                                <td>-0.000000</td>
+                                <td>7</td>
+                                <td class="accuracy-low">0.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>ТАРАНЬ СОЛОМКА с/п</td>
+                                <td>0.100000</td>
+                                <td>0.052000</td>
+                                <td>-0.004000</td>
+                                <td>7</td>
+                                <td class="accuracy-high">100.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>ФИСТАШКИ</td>
+                                <td>0.027000</td>
+                                <td>0.002000</td>
+                                <td>-0.000000</td>
+                                <td>7</td>
+                                <td class="accuracy-low">0.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>ФИСТАШКИ СО ВКУСОМ ЧИЛИ</td>
+                                <td>0.100000</td>
+                                <td>0.052000</td>
+                                <td>-0.004000</td>
+                                <td>7</td>
+                                <td class="accuracy-high">100.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>ХОТ-ТЕЙС</td>
+                                <td>0.100000</td>
+                                <td>0.052000</td>
+                                <td>-0.004000</td>
+                                <td>7</td>
+                                <td class="accuracy-high">100.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>ЧИПСЫ ИЗ ГОВЯДИНЫ (СУХИЕ)</td>
+                                <td>0.100000</td>
+                                <td>0.052000</td>
+                                <td>-0.004000</td>
+                                <td>7</td>
+                                <td class="accuracy-high">100.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>ЧИПСЫ из ИНДЕЙКИ (вяленые)</td>
+                                <td>0.100000</td>
+                                <td>0.052000</td>
+                                <td>-0.004000</td>
+                                <td>7</td>
+                                <td class="accuracy-high">100.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>ЧИПСЫ КУРИН.</td>
+                                <td>0.100000</td>
+                                <td>0.052000</td>
+                                <td>-0.004000</td>
+                                <td>7</td>
+                                <td class="accuracy-high">100.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>ЧИПСЫ СВИНЫЕ</td>
+                                <td>0.100000</td>
+                                <td>0.052000</td>
+                                <td>-0.004000</td>
+                                <td>7</td>
+                                <td class="accuracy-high">100.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>ЧИПСЫ СВИНЫЕ (СУХИЕ ПРЕМИУМ)</td>
+                                <td>0.027000</td>
+                                <td>0.002000</td>
+                                <td>-0.000000</td>
+                                <td>7</td>
+                                <td class="accuracy-low">0.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>ЧИПСЫ ХЛЕБНЫЕ (МАРИНОВАННЫЙ ЧЕСНОК)</td>
+                                <td>0.100000</td>
+                                <td>0.052000</td>
+                                <td>-0.004000</td>
+                                <td>7</td>
+                                <td class="accuracy-high">100.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>Тушка</td>
+                                <td>0.027000</td>
+                                <td>0.002000</td>
+                                <td>-0.000000</td>
+                                <td>7</td>
+                                <td class="accuracy-low">0.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>БАРАБУЛЬКА ЗАМ</td>
+                                <td>0.100000</td>
+                                <td>0.052000</td>
+                                <td>-0.004000</td>
+                                <td>7</td>
+                                <td class="accuracy-high">100.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>ГОРБУША С/Г</td>
+                                <td>0.100000</td>
+                                <td>0.052000</td>
+                                <td>-0.004000</td>
+                                <td>7</td>
+                                <td class="accuracy-high">100.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>ДОРАДО замороженное</td>
+                                <td>0.100000</td>
+                                <td>0.052000</td>
+                                <td>-0.004000</td>
+                                <td>7</td>
+                                <td class="accuracy-high">100.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>КАМБАЛА ЕРШ (ЗАМОРОЖЕННАЯ)</td>
+                                <td>0.100000</td>
+                                <td>0.052000</td>
+                                <td>-0.004000</td>
+                                <td>7</td>
+                                <td class="accuracy-high">100.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>КОРЮШКА С/Г ЗАМ (ПИТЕР)</td>
+                                <td>0.100000</td>
+                                <td>0.052000</td>
+                                <td>-0.004000</td>
+                                <td>7</td>
+                                <td class="accuracy-high">100.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>ЛЕДЯНАЯ ЗАМ</td>
+                                <td>0.100000</td>
+                                <td>0.052000</td>
+                                <td>-0.004000</td>
+                                <td>7</td>
+                                <td class="accuracy-high">100.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>ЛОБАНЬ Б/Г (ЗАМОРОЖЕННАЯ)</td>
+                                <td>0.100000</td>
+                                <td>0.052000</td>
+                                <td>-0.004000</td>
+                                <td>7</td>
+                                <td class="accuracy-high">100.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>МАКРОРУС Б/Г</td>
+                                <td>0.100000</td>
+                                <td>0.052000</td>
+                                <td>-0.004000</td>
+                                <td>7</td>
+                                <td class="accuracy-high">100.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>МИНТАЙ Б/Г 2L 35+ С\М</td>
+                                <td>0.027000</td>
+                                <td>0.002000</td>
+                                <td>-0.000000</td>
+                                <td>7</td>
+                                <td class="accuracy-low">0.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>МОЙВА С/Г ЗАМОРОЖ</td>
+                                <td>0.100000</td>
+                                <td>0.052000</td>
+                                <td>-0.004000</td>
+                                <td>7</td>
+                                <td class="accuracy-high">100.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>МОРСКОЙ ЯЗЫК ТУШКА</td>
+                                <td>0.100000</td>
+                                <td>0.052000</td>
+                                <td>-0.004000</td>
+                                <td>7</td>
+                                <td class="accuracy-high">100.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>НАВАГА Б/Г (ЗАМОРОЖЕННАЯ)</td>
+                                <td>0.027000</td>
+                                <td>0.002000</td>
+                                <td>-0.000000</td>
+                                <td>7</td>
+                                <td class="accuracy-low">0.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>ОКУНЬ морской Б/Г замороженный</td>
+                                <td>0.027000</td>
+                                <td>0.002000</td>
+                                <td>-0.000000</td>
+                                <td>7</td>
+                                <td class="accuracy-low">0.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>ПАЛТУС Б/Г (замороженый)</td>
+                                <td>0.100000</td>
+                                <td>0.052000</td>
+                                <td>-0.004000</td>
+                                <td>7</td>
+                                <td class="accuracy-high">100.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>ПИКША Б/Г</td>
+                                <td>0.100000</td>
+                                <td>0.052000</td>
+                                <td>-0.004000</td>
+                                <td>7</td>
+                                <td class="accuracy-high">100.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>ПУТАСУ С/Г</td>
+                                <td>0.100000</td>
+                                <td>0.052000</td>
+                                <td>-0.004000</td>
+                                <td>7</td>
+                                <td class="accuracy-high">100.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>САЛАКА С/Г (замор.)</td>
+                                <td>0.100000</td>
+                                <td>0.052000</td>
+                                <td>-0.004000</td>
+                                <td>7</td>
+                                <td class="accuracy-high">100.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>СЕМГА ЗАМОРОЖЕНАЯ</td>
+                                <td>0.100000</td>
+                                <td>0.052000</td>
+                                <td>-0.004000</td>
+                                <td>7</td>
+                                <td class="accuracy-high">100.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>СИБАС замороженный</td>
+                                <td>0.100000</td>
+                                <td>0.052000</td>
+                                <td>-0.004000</td>
+                                <td>7</td>
+                                <td class="accuracy-high">100.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>СКУМБРИЯ 600+ (замороженая)</td>
+                                <td>0.027000</td>
+                                <td>0.002000</td>
+                                <td>-0.000000</td>
+                                <td>7</td>
+                                <td class="accuracy-low">0.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>СПИНКИ ТРЕСКИ ЗАМОРОЖ.</td>
+                                <td>0.100000</td>
+                                <td>0.052000</td>
+                                <td>-0.004000</td>
+                                <td>7</td>
+                                <td class="accuracy-high">100.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>ТЕРПУГ С/Г (замороженный)</td>
+                                <td>0.100000</td>
+                                <td>0.052000</td>
+                                <td>-0.004000</td>
+                                <td>7</td>
+                                <td class="accuracy-high">100.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>ТРЕСКА Б/Г (заморож)</td>
+                                <td>0.100000</td>
+                                <td>0.052000</td>
+                                <td>-0.004000</td>
+                                <td>7</td>
+                                <td class="accuracy-high">100.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>ХЕК Б/Г ЗАМОРОЖ</td>
+                                <td>0.100000</td>
+                                <td>0.052000</td>
+                                <td>-0.004000</td>
+                                <td>7</td>
+                                <td class="accuracy-high">100.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>ФАРШ</td>
+                                <td>0.100000</td>
+                                <td>0.052000</td>
+                                <td>-0.004000</td>
+                                <td>7</td>
+                                <td class="accuracy-high">100.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>КОТЛЕТЫ ИЗ КАЛЬМАРА</td>
+                                <td>0.100000</td>
+                                <td>0.052000</td>
+                                <td>-0.004000</td>
+                                <td>7</td>
+                                <td class="accuracy-high">100.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>КОТЛЕТЫ из ТРЕСКИ</td>
+                                <td>0.100000</td>
+                                <td>0.052000</td>
+                                <td>-0.004000</td>
+                                <td>7</td>
+                                <td class="accuracy-high">100.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>КОТЛЕТЫ ЛОСОСЯ треугольники</td>
+                                <td>0.027000</td>
+                                <td>0.002000</td>
+                                <td>-0.000000</td>
+                                <td>7</td>
+                                <td class="accuracy-low">0.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>ПАЛОЧКИ МИНТАЯ В ПАНИРОВКЕ</td>
+                                <td>0.100000</td>
+                                <td>0.052000</td>
+                                <td>-0.004000</td>
+                                <td>7</td>
+                                <td class="accuracy-high">100.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>ЧЕБУРЕКИ из ТРЕСКИ</td>
+                                <td>0.100000</td>
+                                <td>0.052000</td>
+                                <td>-0.004000</td>
+                                <td>7</td>
+                                <td class="accuracy-high">100.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>ФИЛЕ</td>
+                                <td>0.100000</td>
+                                <td>0.052000</td>
+                                <td>-0.004000</td>
+                                <td>7</td>
+                                <td class="accuracy-high">100.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>КАЛЬМАР Н/ОЧ</td>
+                                <td>0.027000</td>
+                                <td>0.002000</td>
+                                <td>-0.000000</td>
+                                <td>7</td>
+                                <td class="accuracy-low">0.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>МОЛОКИ ЛОСОСЕВЫЕ ВЕС</td>
+                                <td>0.027000</td>
+                                <td>0.002000</td>
+                                <td>-0.000000</td>
+                                <td>7</td>
+                                <td class="accuracy-low">0.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>ФИЛЕ ГОРБУШИ</td>
+                                <td>0.100000</td>
+                                <td>0.052000</td>
+                                <td>-0.004000</td>
+                                <td>7</td>
+                                <td class="accuracy-high">100.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>ФИЛЕ ДОРИ</td>
+                                <td>0.100000</td>
+                                <td>0.052000</td>
+                                <td>-0.004000</td>
+                                <td>7</td>
+                                <td class="accuracy-high">100.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>ФИЛЕ МИНТАЯ ВЕС</td>
+                                <td>0.100000</td>
+                                <td>0.052000</td>
+                                <td>-0.004000</td>
+                                <td>7</td>
+                                <td class="accuracy-high">100.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>ФИЛЕ МОРСКОГО ЯЗЫКА</td>
+                                <td>0.100000</td>
+                                <td>0.052000</td>
+                                <td>-0.004000</td>
+                                <td>7</td>
+                                <td class="accuracy-high">100.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>ФИЛЕ ОКУНЯ</td>
+                                <td>0.100000</td>
+                                <td>0.052000</td>
+                                <td>-0.004000</td>
+                                <td>7</td>
+                                <td class="accuracy-high">100.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>ФИЛЕ СУДАКА</td>
+                                <td>0.100000</td>
+                                <td>0.052000</td>
+                                <td>-0.004000</td>
+                                <td>7</td>
+                                <td class="accuracy-high">100.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>ФИЛЕ ТИЛАПИИ</td>
+                                <td>0.100000</td>
+                                <td>0.052000</td>
+                                <td>-0.004000</td>
+                                <td>7</td>
+                                <td class="accuracy-high">100.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>ФИЛЕ ТРЕСКИ 5% Б/К</td>
+                                <td>0.100000</td>
+                                <td>0.052000</td>
+                                <td>-0.004000</td>
+                                <td>7</td>
+                                <td class="accuracy-high">100.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>Пересортица 000000000000029 от 20.07.2025 23:58:53</td>
+                                <td>0.100000</td>
+                                <td>0.052000</td>
+                                <td>-0.004000</td>
+                                <td>7</td>
+                                <td class="accuracy-high">100.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>ФИЛЕ ТРЕСКИ Н/КОЖЕ</td>
+                                <td>0.100000</td>
+                                <td>0.052000</td>
+                                <td>-0.004000</td>
+                                <td>7</td>
+                                <td class="accuracy-high">100.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>Пересортица 000000000000029 от 20.07.2025 23:58:53</td>
+                                <td>0.100000</td>
+                                <td>0.052000</td>
+                                <td>-0.004000</td>
+                                <td>7</td>
+                                <td class="accuracy-high">100.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>ФИЛЕ ХЕКА С/З</td>
+                                <td>0.100000</td>
+                                <td>0.052000</td>
+                                <td>-0.004000</td>
+                                <td>7</td>
+                                <td class="accuracy-high">100.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                            <tr>
+                                <td>Итого</td>
+                                <td>0.100000</td>
+                                <td>0.052000</td>
+                                <td>-0.004000</td>
+                                <td>7</td>
+                                <td class="accuracy-high">100.00</td>
+                                <td>exponential</td>
+                            </tr>
+            
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="footer">
+                    <p>Сгенерировано системой расчета коэффициентов усушки | 28.08.2025 19:00:27</p>
+                    <p>Для сортировки кликните по заголовку столбца | Для поиска используйте поле выше</p>
+                </div>
+            </div>
+            
+        <script>
+        function searchTable() {
+            const input = document.getElementById('searchInput');
+            const filter = input.value.toLowerCase();
+            const table = document.getElementById('dataTable');
+            const rows = table.getElementsByTagName('tr');
+            
+            for (let i = 1; i < rows.length; i++) {
+                const row = rows[i];
+                const cells = row.getElementsByTagName('td');
+                let found = false;
+                
+                for (let j = 0; j < cells.length; j++) {
+                    const cell = cells[j];
+                    if (cell) {
+                        const text = cell.textContent || cell.innerText;
+                        if (text.toLowerCase().indexOf(filter) > -1) {
+                            found = true;
+                            break;
+                        }
+                    }
+                }
+                
+                row.style.display = found ? '' : 'none';
+            }
+            
+            updateStats();
+        }
+        
+        function sortTable(columnIndex) {
+            const table = document.getElementById('dataTable');
+            const rows = Array.from(table.rows).slice(1);
+            const isAscending = table.getAttribute('data-sort-order') !== 'asc';
+            
+            rows.sort((a, b) => {
+                const aText = a.cells[columnIndex].textContent.trim();
+                const bText = b.cells[columnIndex].textContent.trim();
+                
+                // Try to sort as numbers first
+                const aNum = parseFloat(aText);
+                const bNum = parseFloat(bText);
+                
+                if (!isNaN(aNum) && !isNaN(bNum)) {
+                    return isAscending ? aNum - bNum : bNum - aNum;
+                }
+                
+                // Sort as strings
+                return isAscending ? 
+                    aText.localeCompare(bText, 'ru') : 
+                    bText.localeCompare(aText, 'ru');
+            });
+            
+            // Remove existing rows
+            while (table.rows.length > 1) {
+                table.deleteRow(1);
+            }
+            
+            // Add sorted rows
+            rows.forEach(row => table.appendChild(row));
+            
+            // Update sort order
+            table.setAttribute('data-sort-order', isAscending ? 'asc' : 'desc');
+            updateStats();
+        }
+        
+        function updateStats() {
+            const table = document.getElementById('dataTable');
+            const visibleRows = Array.from(table.rows).slice(1).filter(row => row.style.display !== 'none');
+            const totalRows = visibleRows.length;
+            
+            const accuracyCells = visibleRows.map(row => {
+                const cell = row.cells[5]; // Accuracy column
+                return cell ? parseFloat(cell.textContent) || 0 : 0;
+            });
+            
+            const avgAccuracy = accuracyCells.length > 0 ? 
+                accuracyCells.reduce((sum, acc) => sum + acc, 0) / accuracyCells.length : 0;
+            
+            document.getElementById('totalPositions').textContent = totalRows;
+            document.getElementById('avgAccuracy').textContent = avgAccuracy.toFixed(2);
+        }
+        
+        // Initialize stats on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            updateStats();
+        });
+        </script>
+        
+        </body>
+        </html>
+        

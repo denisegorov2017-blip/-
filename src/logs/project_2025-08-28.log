@@ -1,0 +1,239 @@
+2025-08-28 13:09:54.903 | INFO     | __main__:main:43 - GUI приложение запущено.
+2025-08-28 13:10:10.503 | INFO     | __main__:main:43 - GUI приложение запущено.
+2025-08-28 13:13:39.313 | INFO     | __main__:main:43 - GUI приложение запущено.
+2025-08-28 17:05:29.373 | INFO     | __main__:main:43 - GUI приложение запущено.
+2025-08-28 20:30:13.478 | INFO     | __main__:main:43 - GUI приложение запущено.
+2025-08-28 20:43:05.307 | INFO     | src.core.specialized_fish_data_processor:__init__:38 - FishBatchDataProcessor инициализирован
+2025-08-28 20:43:05.308 | INFO     | src.core.specialized_fish_data_processor:calculate_shrinkage_for_batches:300 - Начало расчета усушки для партий товаров из файла: C:/Users/D_909/Desktop/расчет коэффициентов нелинейной усушки, и предварительный расчет усушки 1.1/исходные_данные/Для_расчета_коэфф/b3ded820-4385-4a42-abc7-75dc0756d335_6ba7ac50-fb1a-4bea-9489-265bdfdcb8d1_вся номенклатура за период с 15.07.25 по 21.07.25.xls
+2025-08-28 20:43:05.309 | INFO     | src.core.specialized_fish_data_processor:process_fish_batch_excel:50 - Начало обработки файла партий рыбы: C:/Users/D_909/Desktop/расчет коэффициентов нелинейной усушки, и предварительный расчет усушки 1.1/исходные_данные/Для_расчета_коэфф/b3ded820-4385-4a42-abc7-75dc0756d335_6ba7ac50-fb1a-4bea-9489-265bdfdcb8d1_вся номенклатура за период с 15.07.25 по 21.07.25.xls
+2025-08-28 20:43:05.332 | INFO     | src.core.specialized_fish_data_processor:process_fish_batch_excel:55 - Файл загружен. Размер: (2496, 9)
+2025-08-28 20:43:05.332 | INFO     | src.core.specialized_fish_data_processor:_extract_batch_data:83 - Извлечение данных о партиях...
+2025-08-28 20:43:05.470 | INFO     | src.core.specialized_fish_data_processor:_extract_batch_data:206 - Извлечено 221 партий товаров
+2025-08-28 20:43:05.471 | INFO     | src.core.specialized_fish_data_processor:_convert_to_shrinkage_format:266 - Преобразование данных в формат для расчета усушки...
+2025-08-28 20:43:05.471 | INFO     | src.core.specialized_fish_data_processor:_convert_to_shrinkage_format:286 - Преобразовано 221 записей для расчета усушки
+2025-08-28 20:43:05.473 | SUCCESS  | src.core.specialized_fish_data_processor:process_fish_batch_excel:66 - Обработка завершена. Извлечено 221 записей
+2025-08-28 20:43:05.473 | INFO     | core.data_processor:__init__:37 - DataProcessor инициализирован.
+2025-08-28 20:43:05.475 | INFO     | core.test_data_manager:__init__:46 - TestDataManager инициализирован
+2025-08-28 20:43:05.475 | INFO     | core.reporting:__init__:40 - ReportGenerator инициализирован.
+2025-08-28 20:43:05.475 | INFO     | src.core.shrinkage_system:set_surplus_rate:65 - Установка процента излишка: 0.0000 для номенклатуры: по умолчанию
+2025-08-28 20:43:05.475 | INFO     | src.core.shrinkage_system:__init__:61 - ShrinkageSystem (Оркестратор) инициализирована.
+2025-08-28 20:43:05.476 | INFO     | src.core.shrinkage_system:process_dataset:96 - Начало обработки датасета из файла: b3ded820-4385-4a42-abc7-75dc0756d335_6ba7ac50-fb1a-4bea-9489-265bdfdcb8d1_вся номенклатура за период с 15.07.25 по 21.07.25.xls
+2025-08-28 20:43:05.477 | INFO     | src.core.shrinkage_system:process_dataset:100 - Используется адаптивная модель расчета.
+2025-08-28 20:43:05.477 | INFO     | src.core.shrinkage_system:process_dataset:108 - Этап 1: Расчет коэффициентов для 221 позиций...
+2025-08-28 20:43:05.506 | WARNING  | core.data_processor:calculate_coefficients:78 - Строка не прошла валидацию: ОКУНЬ Г/К. Причина: Неизвестная причина. Ошибка: 1 validation error for NomenclatureRow
+Начальный_остаток
+  Input should be greater than 0 [type=greater_than, input_value=0.0, input_type=float]
+    For further information visit https://errors.pydantic.dev/2.11/v/greater_than
+2025-08-28 20:43:05.508 | WARNING  | core.data_processor:calculate_coefficients:78 - Строка не прошла валидацию: БРЮШКИ ГОРБУШИ Х/К. Причина: Неизвестная причина. Ошибка: 1 validation error for NomenclatureRow
+Начальный_остаток
+  Input should be greater than 0 [type=greater_than, input_value=0.0, input_type=float]
+    For further information visit https://errors.pydantic.dev/2.11/v/greater_than
+2025-08-28 20:43:05.511 | WARNING  | core.data_processor:calculate_coefficients:78 - Строка не прошла валидацию: ЛЕЩ Х/К. Причина: Неизвестная причина. Ошибка: 1 validation error for NomenclatureRow
+Начальный_остаток
+  Input should be greater than 0 [type=greater_than, input_value=0.0, input_type=float]
+    For further information visit https://errors.pydantic.dev/2.11/v/greater_than
+2025-08-28 20:43:05.512 | WARNING  | core.data_processor:calculate_coefficients:78 - Строка не прошла валидацию: Рулет из МАСЛЯНОЙ х/к. Причина: Неизвестная причина. Ошибка: 1 validation error for NomenclatureRow
+Начальный_остаток
+  Input should be greater than 0 [type=greater_than, input_value=0.0, input_type=float]
+    For further information visit https://errors.pydantic.dev/2.11/v/greater_than
+2025-08-28 20:43:05.523 | WARNING  | core.data_processor:calculate_coefficients:78 - Строка не прошла валидацию: ГРЕНКИ ЮБИЛЕЙНЫЕ сало с горчицей. Причина: Неизвестная причина. Ошибка: 1 validation error for NomenclatureRow
+Начальный_остаток
+  Input should be greater than 0 [type=greater_than, input_value=0.0, input_type=float]
+    For further information visit https://errors.pydantic.dev/2.11/v/greater_than
+2025-08-28 20:43:05.526 | WARNING  | core.data_processor:calculate_coefficients:78 - Строка не прошла валидацию: ПЯТАЧКИ КРАБА ЭКСТРА. Причина: Неизвестная причина. Ошибка: 1 validation error for NomenclatureRow
+Начальный_остаток
+  Input should be greater than 0 [type=greater_than, input_value=0.0, input_type=float]
+    For further information visit https://errors.pydantic.dev/2.11/v/greater_than
+2025-08-28 20:43:05.528 | WARNING  | core.data_processor:calculate_coefficients:78 - Строка не прошла валидацию: ЧИПСЫ КУРИНЫЕ (СУХИЕ ПРЕМИУМ). Причина: Неизвестная причина. Ошибка: 1 validation error for NomenclatureRow
+Начальный_остаток
+  Input should be greater than 0 [type=greater_than, input_value=0.0, input_type=float]
+    For further information visit https://errors.pydantic.dev/2.11/v/greater_than
+2025-08-28 20:43:05.530 | WARNING  | core.data_processor:calculate_coefficients:78 - Строка не прошла валидацию: конгрио кревеиочная. Причина: Неизвестная причина. Ошибка: 1 validation error for NomenclatureRow
+Начальный_остаток
+  Input should be greater than 0 [type=greater_than, input_value=0.0, input_type=float]
+    For further information visit https://errors.pydantic.dev/2.11/v/greater_than
+2025-08-28 20:43:05.530 | WARNING  | core.data_processor:calculate_coefficients:78 - Строка не прошла валидацию: ЛЕМОНЕМА Б/Г. Причина: Неизвестная причина. Ошибка: 1 validation error for NomenclatureRow
+Начальный_остаток
+  Input should be greater than 0 [type=greater_than, input_value=0.0, input_type=float]
+    For further information visit https://errors.pydantic.dev/2.11/v/greater_than
+2025-08-28 20:43:05.537 | INFO     | src.core.shrinkage_system:process_dataset:114 - Этап 2: Генерация отчетов и сводки...
+2025-08-28 20:43:05.537 | INFO     | core.reporting:generate:71 - Генерация HTML отчетов...
+2025-08-28 20:43:05.540 | INFO     | core.reporting:generate:74 - Генерация сводной статистики...
+2025-08-28 20:43:05.540 | SUCCESS  | src.core.shrinkage_system:process_dataset:121 - Обработка завершена. Средняя точность: 100.0%
+2025-08-28 20:43:05.540 | SUCCESS  | src.core.specialized_fish_data_processor:calculate_shrinkage_for_batches:322 - Расчет усушки для партий товаров завершен
+2025-08-28 20:43:05.554 | INFO     | __main__:run_calculation:366 - Расчет успешно завершен.
+2025-08-28 20:44:21.349 | INFO     | src.core.specialized_fish_data_processor:__init__:38 - FishBatchDataProcessor инициализирован
+2025-08-28 20:44:21.350 | INFO     | src.core.specialized_fish_data_processor:calculate_shrinkage_for_batches:300 - Начало расчета усушки для партий товаров из файла: C:/Users/D_909/Desktop/расчет коэффициентов нелинейной усушки, и предварительный расчет усушки 1.1/исходные_данные/Для_расчета_коэфф/b3ded820-4385-4a42-abc7-75dc0756d335_6ba7ac50-fb1a-4bea-9489-265bdfdcb8d1_вся номенклатура за период с 15.07.25 по 21.07.25.xls
+2025-08-28 20:44:21.350 | INFO     | src.core.specialized_fish_data_processor:process_fish_batch_excel:50 - Начало обработки файла партий рыбы: C:/Users/D_909/Desktop/расчет коэффициентов нелинейной усушки, и предварительный расчет усушки 1.1/исходные_данные/Для_расчета_коэфф/b3ded820-4385-4a42-abc7-75dc0756d335_6ba7ac50-fb1a-4bea-9489-265bdfdcb8d1_вся номенклатура за период с 15.07.25 по 21.07.25.xls
+2025-08-28 20:44:21.374 | INFO     | src.core.specialized_fish_data_processor:process_fish_batch_excel:55 - Файл загружен. Размер: (2496, 9)
+2025-08-28 20:44:21.374 | INFO     | src.core.specialized_fish_data_processor:_extract_batch_data:83 - Извлечение данных о партиях...
+2025-08-28 20:44:21.502 | INFO     | src.core.specialized_fish_data_processor:_extract_batch_data:206 - Извлечено 221 партий товаров
+2025-08-28 20:44:21.502 | INFO     | src.core.specialized_fish_data_processor:_convert_to_shrinkage_format:266 - Преобразование данных в формат для расчета усушки...
+2025-08-28 20:44:21.503 | INFO     | src.core.specialized_fish_data_processor:_convert_to_shrinkage_format:286 - Преобразовано 221 записей для расчета усушки
+2025-08-28 20:44:21.503 | SUCCESS  | src.core.specialized_fish_data_processor:process_fish_batch_excel:66 - Обработка завершена. Извлечено 221 записей
+2025-08-28 20:44:21.504 | INFO     | core.data_processor:__init__:37 - DataProcessor инициализирован.
+2025-08-28 20:44:21.504 | INFO     | core.test_data_manager:__init__:46 - TestDataManager инициализирован
+2025-08-28 20:44:21.505 | INFO     | core.reporting:__init__:40 - ReportGenerator инициализирован.
+2025-08-28 20:44:21.505 | INFO     | src.core.shrinkage_system:set_surplus_rate:65 - Установка процента излишка: 0.0000 для номенклатуры: по умолчанию
+2025-08-28 20:44:21.505 | INFO     | src.core.shrinkage_system:__init__:61 - ShrinkageSystem (Оркестратор) инициализирована.
+2025-08-28 20:44:21.505 | INFO     | src.core.shrinkage_system:process_dataset:96 - Начало обработки датасета из файла: b3ded820-4385-4a42-abc7-75dc0756d335_6ba7ac50-fb1a-4bea-9489-265bdfdcb8d1_вся номенклатура за период с 15.07.25 по 21.07.25.xls
+2025-08-28 20:44:21.505 | INFO     | src.core.shrinkage_system:process_dataset:108 - Этап 1: Расчет коэффициентов для 221 позиций...
+2025-08-28 20:44:21.680 | WARNING  | core.data_processor:calculate_coefficients:78 - Строка не прошла валидацию: ОКУНЬ Г/К. Причина: Неизвестная причина. Ошибка: 1 validation error for NomenclatureRow
+Начальный_остаток
+  Input should be greater than 0 [type=greater_than, input_value=0.0, input_type=float]
+    For further information visit https://errors.pydantic.dev/2.11/v/greater_than
+2025-08-28 20:44:21.720 | WARNING  | core.data_processor:calculate_coefficients:78 - Строка не прошла валидацию: БРЮШКИ ГОРБУШИ Х/К. Причина: Неизвестная причина. Ошибка: 1 validation error for NomenclatureRow
+Начальный_остаток
+  Input should be greater than 0 [type=greater_than, input_value=0.0, input_type=float]
+    For further information visit https://errors.pydantic.dev/2.11/v/greater_than
+2025-08-28 20:44:21.776 | WARNING  | core.data_processor:calculate_coefficients:78 - Строка не прошла валидацию: ЛЕЩ Х/К. Причина: Неизвестная причина. Ошибка: 1 validation error for NomenclatureRow
+Начальный_остаток
+  Input should be greater than 0 [type=greater_than, input_value=0.0, input_type=float]
+    For further information visit https://errors.pydantic.dev/2.11/v/greater_than
+2025-08-28 20:44:21.813 | WARNING  | core.data_processor:calculate_coefficients:78 - Строка не прошла валидацию: Рулет из МАСЛЯНОЙ х/к. Причина: Неизвестная причина. Ошибка: 1 validation error for NomenclatureRow
+Начальный_остаток
+  Input should be greater than 0 [type=greater_than, input_value=0.0, input_type=float]
+    For further information visit https://errors.pydantic.dev/2.11/v/greater_than
+2025-08-28 20:44:22.415 | WARNING  | core.data_processor:calculate_coefficients:78 - Строка не прошла валидацию: ГРЕНКИ ЮБИЛЕЙНЫЕ сало с горчицей. Причина: Неизвестная причина. Ошибка: 1 validation error for NomenclatureRow
+Начальный_остаток
+  Input should be greater than 0 [type=greater_than, input_value=0.0, input_type=float]
+    For further information visit https://errors.pydantic.dev/2.11/v/greater_than
+2025-08-28 20:44:22.552 | WARNING  | core.data_processor:calculate_coefficients:78 - Строка не прошла валидацию: ПЯТАЧКИ КРАБА ЭКСТРА. Причина: Неизвестная причина. Ошибка: 1 validation error for NomenclatureRow
+Начальный_остаток
+  Input should be greater than 0 [type=greater_than, input_value=0.0, input_type=float]
+    For further information visit https://errors.pydantic.dev/2.11/v/greater_than
+2025-08-28 20:44:22.655 | WARNING  | core.data_processor:calculate_coefficients:78 - Строка не прошла валидацию: ЧИПСЫ КУРИНЫЕ (СУХИЕ ПРЕМИУМ). Причина: Неизвестная причина. Ошибка: 1 validation error for NomenclatureRow
+Начальный_остаток
+  Input should be greater than 0 [type=greater_than, input_value=0.0, input_type=float]
+    For further information visit https://errors.pydantic.dev/2.11/v/greater_than
+2025-08-28 20:44:22.723 | WARNING  | core.data_processor:calculate_coefficients:78 - Строка не прошла валидацию: конгрио кревеиочная. Причина: Неизвестная причина. Ошибка: 1 validation error for NomenclatureRow
+Начальный_остаток
+  Input should be greater than 0 [type=greater_than, input_value=0.0, input_type=float]
+    For further information visit https://errors.pydantic.dev/2.11/v/greater_than
+2025-08-28 20:44:22.733 | WARNING  | core.data_processor:calculate_coefficients:78 - Строка не прошла валидацию: ЛЕМОНЕМА Б/Г. Причина: Неизвестная причина. Ошибка: 1 validation error for NomenclatureRow
+Начальный_остаток
+  Input should be greater than 0 [type=greater_than, input_value=0.0, input_type=float]
+    For further information visit https://errors.pydantic.dev/2.11/v/greater_than
+2025-08-28 20:44:23.002 | INFO     | src.core.shrinkage_system:process_dataset:114 - Этап 2: Генерация отчетов и сводки...
+2025-08-28 20:44:23.003 | INFO     | core.reporting:generate:71 - Генерация HTML отчетов...
+2025-08-28 20:44:23.005 | INFO     | core.reporting:generate:74 - Генерация сводной статистики...
+2025-08-28 20:44:23.005 | SUCCESS  | src.core.shrinkage_system:process_dataset:121 - Обработка завершена. Средняя точность: 100.0%
+2025-08-28 20:44:23.006 | SUCCESS  | src.core.specialized_fish_data_processor:calculate_shrinkage_for_batches:322 - Расчет усушки для партий товаров завершен
+2025-08-28 20:44:23.021 | INFO     | __main__:run_calculation:366 - Расчет успешно завершен.
+2025-08-28 20:50:52.438 | INFO     | src.core.specialized_fish_data_processor:__init__:38 - FishBatchDataProcessor инициализирован
+2025-08-28 20:50:52.438 | INFO     | src.core.specialized_fish_data_processor:calculate_shrinkage_for_batches:300 - Начало расчета усушки для партий товаров из файла: C:/Users/D_909/Desktop/расчет коэффициентов нелинейной усушки, и предварительный расчет усушки 1.1/исходные_данные/Для_расчета_коэфф/b3ded820-4385-4a42-abc7-75dc0756d335_6ba7ac50-fb1a-4bea-9489-265bdfdcb8d1_вся номенклатура за период с 15.07.25 по 21.07.25.xls
+2025-08-28 20:50:52.438 | INFO     | src.core.specialized_fish_data_processor:process_fish_batch_excel:50 - Начало обработки файла партий рыбы: C:/Users/D_909/Desktop/расчет коэффициентов нелинейной усушки, и предварительный расчет усушки 1.1/исходные_данные/Для_расчета_коэфф/b3ded820-4385-4a42-abc7-75dc0756d335_6ba7ac50-fb1a-4bea-9489-265bdfdcb8d1_вся номенклатура за период с 15.07.25 по 21.07.25.xls
+2025-08-28 20:50:52.464 | INFO     | src.core.specialized_fish_data_processor:process_fish_batch_excel:55 - Файл загружен. Размер: (2496, 9)
+2025-08-28 20:50:52.464 | INFO     | src.core.specialized_fish_data_processor:_extract_batch_data:83 - Извлечение данных о партиях...
+2025-08-28 20:50:52.598 | INFO     | src.core.specialized_fish_data_processor:_extract_batch_data:206 - Извлечено 221 партий товаров
+2025-08-28 20:50:52.598 | INFO     | src.core.specialized_fish_data_processor:_convert_to_shrinkage_format:266 - Преобразование данных в формат для расчета усушки...
+2025-08-28 20:50:52.599 | INFO     | src.core.specialized_fish_data_processor:_convert_to_shrinkage_format:286 - Преобразовано 221 записей для расчета усушки
+2025-08-28 20:50:52.599 | SUCCESS  | src.core.specialized_fish_data_processor:process_fish_batch_excel:66 - Обработка завершена. Извлечено 221 записей
+2025-08-28 20:50:52.600 | INFO     | core.data_processor:__init__:37 - DataProcessor инициализирован.
+2025-08-28 20:50:52.601 | INFO     | core.test_data_manager:__init__:46 - TestDataManager инициализирован
+2025-08-28 20:50:52.601 | INFO     | core.reporting:__init__:40 - ReportGenerator инициализирован.
+2025-08-28 20:50:52.601 | INFO     | src.core.shrinkage_system:set_surplus_rate:65 - Установка процента излишка: 0.0000 для номенклатуры: по умолчанию
+2025-08-28 20:50:52.601 | INFO     | src.core.shrinkage_system:__init__:61 - ShrinkageSystem (Оркестратор) инициализирована.
+2025-08-28 20:50:52.601 | INFO     | src.core.shrinkage_system:process_dataset:96 - Начало обработки датасета из файла: b3ded820-4385-4a42-abc7-75dc0756d335_6ba7ac50-fb1a-4bea-9489-265bdfdcb8d1_вся номенклатура за период с 15.07.25 по 21.07.25.xls
+2025-08-28 20:50:52.602 | INFO     | src.core.shrinkage_system:process_dataset:108 - Этап 1: Расчет коэффициентов для 221 позиций...
+2025-08-28 20:50:52.728 | WARNING  | core.data_processor:calculate_coefficients:78 - Строка не прошла валидацию: ОКУНЬ Г/К. Причина: Неизвестная причина. Ошибка: 1 validation error for NomenclatureRow
+Начальный_остаток
+  Input should be greater than 0 [type=greater_than, input_value=0.0, input_type=float]
+    For further information visit https://errors.pydantic.dev/2.11/v/greater_than
+2025-08-28 20:50:52.780 | WARNING  | core.data_processor:calculate_coefficients:78 - Строка не прошла валидацию: БРЮШКИ ГОРБУШИ Х/К. Причина: Неизвестная причина. Ошибка: 1 validation error for NomenclatureRow
+Начальный_остаток
+  Input should be greater than 0 [type=greater_than, input_value=0.0, input_type=float]
+    For further information visit https://errors.pydantic.dev/2.11/v/greater_than
+2025-08-28 20:50:52.830 | WARNING  | core.data_processor:calculate_coefficients:78 - Строка не прошла валидацию: ЛЕЩ Х/К. Причина: Неизвестная причина. Ошибка: 1 validation error for NomenclatureRow
+Начальный_остаток
+  Input should be greater than 0 [type=greater_than, input_value=0.0, input_type=float]
+    For further information visit https://errors.pydantic.dev/2.11/v/greater_than
+2025-08-28 20:50:52.849 | WARNING  | core.data_processor:calculate_coefficients:78 - Строка не прошла валидацию: Рулет из МАСЛЯНОЙ х/к. Причина: Неизвестная причина. Ошибка: 1 validation error for NomenclatureRow
+Начальный_остаток
+  Input should be greater than 0 [type=greater_than, input_value=0.0, input_type=float]
+    For further information visit https://errors.pydantic.dev/2.11/v/greater_than
+2025-08-28 20:50:53.304 | WARNING  | core.data_processor:calculate_coefficients:78 - Строка не прошла валидацию: ГРЕНКИ ЮБИЛЕЙНЫЕ сало с горчицей. Причина: Неизвестная причина. Ошибка: 1 validation error for NomenclatureRow
+Начальный_остаток
+  Input should be greater than 0 [type=greater_than, input_value=0.0, input_type=float]
+    For further information visit https://errors.pydantic.dev/2.11/v/greater_than
+2025-08-28 20:50:53.411 | WARNING  | core.data_processor:calculate_coefficients:78 - Строка не прошла валидацию: ПЯТАЧКИ КРАБА ЭКСТРА. Причина: Неизвестная причина. Ошибка: 1 validation error for NomenclatureRow
+Начальный_остаток
+  Input should be greater than 0 [type=greater_than, input_value=0.0, input_type=float]
+    For further information visit https://errors.pydantic.dev/2.11/v/greater_than
+2025-08-28 20:50:53.482 | WARNING  | core.data_processor:calculate_coefficients:78 - Строка не прошла валидацию: ЧИПСЫ КУРИНЫЕ (СУХИЕ ПРЕМИУМ). Причина: Неизвестная причина. Ошибка: 1 validation error for NomenclatureRow
+Начальный_остаток
+  Input should be greater than 0 [type=greater_than, input_value=0.0, input_type=float]
+    For further information visit https://errors.pydantic.dev/2.11/v/greater_than
+2025-08-28 20:50:53.527 | WARNING  | core.data_processor:calculate_coefficients:78 - Строка не прошла валидацию: конгрио кревеиочная. Причина: Неизвестная причина. Ошибка: 1 validation error for NomenclatureRow
+Начальный_остаток
+  Input should be greater than 0 [type=greater_than, input_value=0.0, input_type=float]
+    For further information visit https://errors.pydantic.dev/2.11/v/greater_than
+2025-08-28 20:50:53.542 | WARNING  | core.data_processor:calculate_coefficients:78 - Строка не прошла валидацию: ЛЕМОНЕМА Б/Г. Причина: Неизвестная причина. Ошибка: 1 validation error for NomenclatureRow
+Начальный_остаток
+  Input should be greater than 0 [type=greater_than, input_value=0.0, input_type=float]
+    For further information visit https://errors.pydantic.dev/2.11/v/greater_than
+2025-08-28 20:50:53.768 | INFO     | src.core.shrinkage_system:process_dataset:114 - Этап 2: Генерация отчетов и сводки...
+2025-08-28 20:50:53.768 | INFO     | core.reporting:generate:71 - Генерация HTML отчетов...
+2025-08-28 20:50:53.771 | INFO     | core.reporting:generate:74 - Генерация сводной статистики...
+2025-08-28 20:50:53.772 | SUCCESS  | src.core.shrinkage_system:process_dataset:121 - Обработка завершена. Средняя точность: 1.4%
+2025-08-28 20:50:53.772 | SUCCESS  | src.core.specialized_fish_data_processor:calculate_shrinkage_for_batches:322 - Расчет усушки для партий товаров завершен
+2025-08-28 20:50:53.790 | INFO     | __main__:run_calculation:366 - Расчет успешно завершен.
+2025-08-28 20:51:39.180 | INFO     | src.core.specialized_fish_data_processor:__init__:38 - FishBatchDataProcessor инициализирован
+2025-08-28 20:51:39.181 | INFO     | src.core.specialized_fish_data_processor:calculate_shrinkage_for_batches:300 - Начало расчета усушки для партий товаров из файла: C:/Users/D_909/Desktop/расчет коэффициентов нелинейной усушки, и предварительный расчет усушки 1.1/исходные_данные/Для_расчета_коэфф/b3ded820-4385-4a42-abc7-75dc0756d335_6ba7ac50-fb1a-4bea-9489-265bdfdcb8d1_вся номенклатура за период с 15.07.25 по 21.07.25.xls
+2025-08-28 20:51:39.181 | INFO     | src.core.specialized_fish_data_processor:process_fish_batch_excel:50 - Начало обработки файла партий рыбы: C:/Users/D_909/Desktop/расчет коэффициентов нелинейной усушки, и предварительный расчет усушки 1.1/исходные_данные/Для_расчета_коэфф/b3ded820-4385-4a42-abc7-75dc0756d335_6ba7ac50-fb1a-4bea-9489-265bdfdcb8d1_вся номенклатура за период с 15.07.25 по 21.07.25.xls
+2025-08-28 20:51:39.205 | INFO     | src.core.specialized_fish_data_processor:process_fish_batch_excel:55 - Файл загружен. Размер: (2496, 9)
+2025-08-28 20:51:39.206 | INFO     | src.core.specialized_fish_data_processor:_extract_batch_data:83 - Извлечение данных о партиях...
+2025-08-28 20:51:39.341 | INFO     | src.core.specialized_fish_data_processor:_extract_batch_data:206 - Извлечено 221 партий товаров
+2025-08-28 20:51:39.342 | INFO     | src.core.specialized_fish_data_processor:_convert_to_shrinkage_format:266 - Преобразование данных в формат для расчета усушки...
+2025-08-28 20:51:39.342 | INFO     | src.core.specialized_fish_data_processor:_convert_to_shrinkage_format:286 - Преобразовано 221 записей для расчета усушки
+2025-08-28 20:51:39.343 | SUCCESS  | src.core.specialized_fish_data_processor:process_fish_batch_excel:66 - Обработка завершена. Извлечено 221 записей
+2025-08-28 20:51:39.343 | INFO     | core.data_processor:__init__:37 - DataProcessor инициализирован.
+2025-08-28 20:51:39.345 | INFO     | core.test_data_manager:__init__:46 - TestDataManager инициализирован
+2025-08-28 20:51:39.345 | INFO     | core.reporting:__init__:40 - ReportGenerator инициализирован.
+2025-08-28 20:51:39.345 | INFO     | src.core.shrinkage_system:set_surplus_rate:65 - Установка процента излишка: 0.0000 для номенклатуры: по умолчанию
+2025-08-28 20:51:39.346 | INFO     | src.core.shrinkage_system:__init__:61 - ShrinkageSystem (Оркестратор) инициализирована.
+2025-08-28 20:51:39.346 | INFO     | src.core.shrinkage_system:process_dataset:96 - Начало обработки датасета из файла: b3ded820-4385-4a42-abc7-75dc0756d335_6ba7ac50-fb1a-4bea-9489-265bdfdcb8d1_вся номенклатура за период с 15.07.25 по 21.07.25.xls
+2025-08-28 20:51:39.346 | INFO     | src.core.shrinkage_system:process_dataset:100 - Используется адаптивная модель расчета.
+2025-08-28 20:51:39.346 | INFO     | src.core.shrinkage_system:process_dataset:108 - Этап 1: Расчет коэффициентов для 221 позиций...
+2025-08-28 20:51:39.353 | WARNING  | core.data_processor:calculate_coefficients:78 - Строка не прошла валидацию: ОКУНЬ Г/К. Причина: Неизвестная причина. Ошибка: 1 validation error for NomenclatureRow
+Начальный_остаток
+  Input should be greater than 0 [type=greater_than, input_value=0.0, input_type=float]
+    For further information visit https://errors.pydantic.dev/2.11/v/greater_than
+2025-08-28 20:51:39.354 | WARNING  | core.data_processor:calculate_coefficients:78 - Строка не прошла валидацию: БРЮШКИ ГОРБУШИ Х/К. Причина: Неизвестная причина. Ошибка: 1 validation error for NomenclatureRow
+Начальный_остаток
+  Input should be greater than 0 [type=greater_than, input_value=0.0, input_type=float]
+    For further information visit https://errors.pydantic.dev/2.11/v/greater_than
+2025-08-28 20:51:39.356 | WARNING  | core.data_processor:calculate_coefficients:78 - Строка не прошла валидацию: ЛЕЩ Х/К. Причина: Неизвестная причина. Ошибка: 1 validation error for NomenclatureRow
+Начальный_остаток
+  Input should be greater than 0 [type=greater_than, input_value=0.0, input_type=float]
+    For further information visit https://errors.pydantic.dev/2.11/v/greater_than
+2025-08-28 20:51:39.357 | WARNING  | core.data_processor:calculate_coefficients:78 - Строка не прошла валидацию: Рулет из МАСЛЯНОЙ х/к. Причина: Неизвестная причина. Ошибка: 1 validation error for NomenclatureRow
+Начальный_остаток
+  Input should be greater than 0 [type=greater_than, input_value=0.0, input_type=float]
+    For further information visit https://errors.pydantic.dev/2.11/v/greater_than
+2025-08-28 20:51:39.369 | WARNING  | core.data_processor:calculate_coefficients:78 - Строка не прошла валидацию: ГРЕНКИ ЮБИЛЕЙНЫЕ сало с горчицей. Причина: Неизвестная причина. Ошибка: 1 validation error for NomenclatureRow
+Начальный_остаток
+  Input should be greater than 0 [type=greater_than, input_value=0.0, input_type=float]
+    For further information visit https://errors.pydantic.dev/2.11/v/greater_than
+2025-08-28 20:51:39.372 | WARNING  | core.data_processor:calculate_coefficients:78 - Строка не прошла валидацию: ПЯТАЧКИ КРАБА ЭКСТРА. Причина: Неизвестная причина. Ошибка: 1 validation error for NomenclatureRow
+Начальный_остаток
+  Input should be greater than 0 [type=greater_than, input_value=0.0, input_type=float]
+    For further information visit https://errors.pydantic.dev/2.11/v/greater_than
+2025-08-28 20:51:39.374 | WARNING  | core.data_processor:calculate_coefficients:78 - Строка не прошла валидацию: ЧИПСЫ КУРИНЫЕ (СУХИЕ ПРЕМИУМ). Причина: Неизвестная причина. Ошибка: 1 validation error for NomenclatureRow
+Начальный_остаток
+  Input should be greater than 0 [type=greater_than, input_value=0.0, input_type=float]
+    For further information visit https://errors.pydantic.dev/2.11/v/greater_than
+2025-08-28 20:51:39.376 | WARNING  | core.data_processor:calculate_coefficients:78 - Строка не прошла валидацию: конгрио кревеиочная. Причина: Неизвестная причина. Ошибка: 1 validation error for NomenclatureRow
+Начальный_остаток
+  Input should be greater than 0 [type=greater_than, input_value=0.0, input_type=float]
+    For further information visit https://errors.pydantic.dev/2.11/v/greater_than
+2025-08-28 20:51:39.376 | WARNING  | core.data_processor:calculate_coefficients:78 - Строка не прошла валидацию: ЛЕМОНЕМА Б/Г. Причина: Неизвестная причина. Ошибка: 1 validation error for NomenclatureRow
+Начальный_остаток
+  Input should be greater than 0 [type=greater_than, input_value=0.0, input_type=float]
+    For further information visit https://errors.pydantic.dev/2.11/v/greater_than
+2025-08-28 20:51:39.381 | INFO     | src.core.shrinkage_system:process_dataset:114 - Этап 2: Генерация отчетов и сводки...
+2025-08-28 20:51:39.381 | INFO     | core.reporting:generate:71 - Генерация HTML отчетов...
+2025-08-28 20:51:39.384 | INFO     | core.reporting:generate:74 - Генерация сводной статистики...
+2025-08-28 20:51:39.385 | SUCCESS  | src.core.shrinkage_system:process_dataset:121 - Обработка завершена. Средняя точность: 100.0%
+2025-08-28 20:51:39.385 | SUCCESS  | src.core.specialized_fish_data_processor:calculate_shrinkage_for_batches:322 - Расчет усушки для партий товаров завершен
+2025-08-28 20:51:39.402 | INFO     | __main__:run_calculation:366 - Расчет успешно завершен.
