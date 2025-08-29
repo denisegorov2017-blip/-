@@ -121,16 +121,27 @@ def process_source_data():
                         nomenclature=nomenclature_data.name
                     )
                     
-                    # Рассчитываем фактическую усушку
-                    actual_shrinkage = (nomenclature_data.initial_balance + nomenclature_data.incoming - 
-                                      nomenclature_data.outgoing - nomenclature_data.final_balance)
-                    actual_shrinkage_percent = (actual_shrinkage / nomenclature_data.initial_balance) * 100 if nomenclature_data.initial_balance > 0 else 0
+                    # Анализируем недостачи из данных инвентаризации
+                    # Документы инвентаризации содержат информацию о недостачах, 
+                    # система анализирует их для определения части, связанной с усушкой
+                    inventory_shortage = (nomenclature_data.initial_balance + nomenclature_data.incoming - 
+                                        nomenclature_data.outgoing - nomenclature_data.final_balance)
+                    
+                    # Используем адаптивную модель для определения части недостач, связанной с усушкой
+                    shrinkage_component = model.determine_shrinkage_component(
+                        inventory_shortage, 
+                        nomenclature_data.initial_balance,
+                        nomenclature=nomenclature_data.name
+                    )
+                    
+                    shrinkage_percent = (shrinkage_component / nomenclature_data.initial_balance) * 100 if nomenclature_data.initial_balance > 0 else 0
+                    inventory_shortage_percent = (inventory_shortage / nomenclature_data.initial_balance) * 100 if nomenclature_data.initial_balance > 0 else 0
                     
                     # Рассчитываем прогнозируемую усушку в процентах
                     forecast_percent = (forecast / nomenclature_data.initial_balance) * 100 if nomenclature_data.initial_balance > 0 else 0
                     
                     print(f"   {nomenclature_data.name:20} | Тип: {product_type_desc:15} | "
-                          f"Факт: {actual_shrinkage_percent:.2f}% | Прогноз: {forecast_percent:.2f}%")
+                          f"Недостача: {inventory_shortage_percent:.2f}% | Усушка: {shrinkage_percent:.2f}% | Прогноз: {forecast_percent:.2f}%")
                     
                     # Сохраняем результаты
                     file_results["calculations"].append({
@@ -142,8 +153,10 @@ def process_source_data():
                         "outgoing": nomenclature_data.outgoing,
                         "final_balance": nomenclature_data.final_balance,
                         "storage_days": nomenclature_data.storage_days,
-                        "actual_shrinkage": actual_shrinkage,
-                        "actual_shrinkage_percent": actual_shrinkage_percent,
+                        "inventory_shortage": inventory_shortage,
+                        "inventory_shortage_percent": inventory_shortage_percent,
+                        "shrinkage_component": shrinkage_component,
+                        "shrinkage_percent": shrinkage_percent,
                         "forecast_shrinkage": forecast,
                         "forecast_shrinkage_percent": forecast_percent,
                         "coefficients": coefficients

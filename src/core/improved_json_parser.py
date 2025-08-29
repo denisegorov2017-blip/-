@@ -103,8 +103,10 @@ def _parse_real_format(data: Dict[str, Any]) -> pd.DataFrame:
             
             # Создаем запись, если есть данные
             if initial_balance > 0 or incoming > 0 or outgoing > 0 or final_balance > 0:
+                # Документы инвентаризации содержат информацию о недостачах
+                # Система анализирует эту информацию для определения части, связанной с усушкой
                 theoretical_balance = initial_balance + incoming - outgoing
-                shrinkage = max(0, theoretical_balance - final_balance)
+                inventory_shortage = theoretical_balance - final_balance
                 
                 metric = {
                     'Номенклатура': nomenclature_name,
@@ -113,8 +115,8 @@ def _parse_real_format(data: Dict[str, Any]) -> pd.DataFrame:
                     'Расход': outgoing,
                     'Конечный_остаток': final_balance,
                     'Теоретический_остаток': theoretical_balance,
-                    'Усушка': shrinkage,
-                    'Коэффициент_усушки': shrinkage / initial_balance if initial_balance > 0 else 0,
+                    'Недостача_по_инвентаризации': inventory_shortage,
+                    'Коэффициент_недостачи': inventory_shortage / initial_balance if initial_balance > 0 else 0,
                     'Период_хранения_дней': storage_days,
                     'Количество_документов': next_nom_idx - i - 1
                 }

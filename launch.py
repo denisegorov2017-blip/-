@@ -16,7 +16,7 @@ def launch_flet_gui():
         # Убедимся, что мы в правильной директории
         project_dir = os.path.dirname(os.path.abspath(__file__))
         os.chdir(project_dir)
-        subprocess.run([sys.executable, "-m", "flet", "run", "src/gui.py"], check=True)
+        subprocess.run([sys.executable, "-m", "flet", "run", "src/gui_complete.py"], check=True)
     except subprocess.CalledProcessError as e:
         print(f"❌ Ошибка при запуске Flet GUI: {e}")
     except FileNotFoundError:

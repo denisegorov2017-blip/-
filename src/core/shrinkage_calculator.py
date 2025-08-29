@@ -3,6 +3,9 @@
 """
 Модуль расчета коэффициентов нелинейной усушки
 Реализует математические модели для определения коэффициентов a, b, c
+
+ВАЖНО: Этот модуль работает с данными инвентаризации, которые уже содержат информацию о недостачах.
+Система анализирует эти данные для определения коэффициентов усушки, а не рассчитывает усушку по балансам.
 """
 
 import numpy as np
@@ -22,6 +25,10 @@ class ShrinkageCalculator:
     - Экспоненциальная модель: S(t) = a * (1 - exp(-b*t)) + c*t
     - Линейная модель: S(t) = a*t + b
     - Полиномиальная модель: S(t) = a*t² + b*t + c
+    
+    ВАЖНО: Этот калькулятор работает с данными инвентаризации, содержащими информацию о недостачах.
+    Причины недостач могут быть разные - усушка, утеря товара и другие факторы.
+    Система анализирует эту информацию для определения части недостач, связанной с усушкой.
     """
     
     def __init__(self):
@@ -52,7 +59,7 @@ class ShrinkageCalculator:
         Рассчитывает коэффициенты усушки для одной номенклатуры.
         
         Args:
-            nomenclature_data: Данные о номенклатуре
+            nomenclature_data: Данные о номенклатуре (из инвентаризации)
             model_type: Тип модели ('exponential', 'linear', 'polynomial')
             
         Returns:
@@ -194,23 +201,24 @@ class ShrinkageCalculator:
         Подготавливает временной ряд данных для расчета коэффициентов.
         
         Args:
-            nomenclature_data: Данные номенклатуры
+            nomenclature_data: Данные номенклатуры из инвентаризации
             
         Returns:
             List[Dict]: Временной ряд с усушкой по дням
         """
-        # Извлекаем базовые данные
+        # Извлекаем базовые данные из инвентаризации
         initial_balance = nomenclature_data.get('initial_balance', 0)
         final_balance = nomenclature_data.get('final_balance', 0)
         incoming = nomenclature_data.get('incoming', 0)
         outgoing = nomenclature_data.get('outgoing', 0)
         storage_days = nomenclature_data.get('storage_days', 7)
         
-        # Используем реальную усушку если она есть
+        # Используем реальную усушку если она есть в данных
         if 'actual_shrinkage' in nomenclature_data:
             total_shrinkage = nomenclature_data['actual_shrinkage']
         else:
-            # Рассчитываем общую усушку
+            # Рассчитываем общую усушку на основе данных инвентаризации
+            # Это ключевой момент: мы анализируем недостачи из инвентаризации
             theoretical_balance = initial_balance + incoming - outgoing
             total_shrinkage = max(0, theoretical_balance - final_balance)
         

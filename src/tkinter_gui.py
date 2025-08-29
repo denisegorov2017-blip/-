@@ -18,6 +18,7 @@ from src.core.excel_hierarchy_preserver import ExcelHierarchyPreserver
 from src.core.improved_json_parser import parse_from_json
 from src.core.specialized_fish_data_processor import FishBatchDataProcessor
 from src.core.test_data_manager import TestDataManager
+from src.core.ai_chat import AIChat  # Добавляем импорт ИИ чата
 from src.logger_config import log
 
 
@@ -27,6 +28,9 @@ class ShrinkageCalculatorGUI:
         self.root.title("Система Расчета Коэффициентов Усушки")
         self.root.geometry("1100x750")
         self.root.minsize(900, 650)
+        
+        # Initialize AI Chat
+        self.ai_chat = AIChat()
         
         # Configure modern styles
         self.setup_styles()
@@ -251,6 +255,44 @@ class ShrinkageCalculatorGUI:
                  font=('Segoe UI', 9), 
                  foreground='#64748b').pack(anchor=tk.W, pady=(10, 0))
         
+        # AI Chat tab
+        chat_tab = ttk.Frame(notebook, padding="10")
+        notebook.add(chat_tab, text="  ИИ-чат  ")
+        
+        chat_frame = ttk.LabelFrame(chat_tab, text="ИИ-ассистент", padding="15")
+        chat_frame.pack(fill=tk.BOTH, expand=True)
+        
+        # Chat history display
+        self.chat_display = scrolledtext.ScrolledText(chat_frame,
+                                                     height=20,
+                                                     state="disabled",
+                                                     wrap=tk.WORD,
+                                                     font=('Segoe UI', 10),
+                                                     bg='white',
+                                                     fg='#0f172a')
+        self.chat_display.pack(fill=tk.BOTH, expand=True, pady=(0, 10))
+        
+        # Chat input area
+        chat_input_frame = ttk.Frame(chat_frame)
+        chat_input_frame.pack(fill=tk.X)
+        
+        self.chat_input = ttk.Entry(chat_input_frame, font=('Segoe UI', 10))
+        self.chat_input.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=(0, 10))
+        self.chat_input.bind('<Return>', self.send_chat_message)
+        
+        send_btn = ttk.Button(chat_input_frame, text="Отправить", command=self.send_chat_message, style='Accent.TButton')
+        send_btn.pack(side=tk.LEFT, padx=(0, 5))
+        
+        clear_btn = ttk.Button(chat_input_frame, text="Очистить", command=self.clear_chat, style='Secondary.TButton')
+        clear_btn.pack(side=tk.LEFT)
+        
+        # AI Settings button
+        settings_btn = ttk.Button(chat_frame, text="Настройки ИИ", command=self.show_ai_settings, style='Secondary.TButton')
+        settings_btn.pack(anchor=tk.W, pady=(10, 0))
+        
+        # Initialize chat display
+        self.update_chat_display()
+        
         # Help tab
         help_tab = ttk.Frame(notebook, padding="20")
         notebook.add(help_tab, text="  Помощь  ")
@@ -269,6 +311,8 @@ class ShrinkageCalculatorGUI:
 • Специализированная обработка: Для партий рыбы с датами прихода и инвентаризации
 • Адаптивная модель: Самообучающаяся модель для повышения точности
 • Учет излишка: Возможность учета процента излишка при поступлении
+• Проверка инвентаризаций: Автоматическая проверка наличия начальной и конечной инвентаризаций
+• ИИ-чат: Встроенный ИИ-ассистент для помощи в работе с системой
 
 КАК ИСПОЛЬЗОВАТЬ:
 1. Выберите Excel файл с данными
@@ -276,6 +320,11 @@ class ShrinkageCalculatorGUI:
 3. Настройте параметры расчета
 4. Нажмите "Рассчитать коэффициенты"
 5. Откройте отчеты для просмотра результатов
+
+ИИ-ЧАТ:
+Встроенный ИИ-ассистент помогает пользователям понимать работу системы и правильно готовить данные для расчетов.
+Можно задавать вопросы о работе системы, подготовке данных, интерпретации результатов и т.д.
+В настройках можно подключить внешние ИИ-сервисы (OpenAI, Claude и др.) при наличии API ключа.
 
 ОТЧЕТЫ:
 • Основной отчет: Коэффициенты усушки с интерактивной таблицей
@@ -506,6 +555,141 @@ class ShrinkageCalculatorGUI:
         except Exception as e:
             self.update_status(f"Ошибка при организации тестовых данных: {e}")
             log.exception("Ошибка при организации тестовых данных")
+    
+    # AI Chat methods
+    def update_chat_display(self):
+        """Update the chat display with current chat history"""
+        self.chat_display.config(state="normal")
+        self.chat_display.delete(1.0, tk.END)
+        
+        for message in self.ai_chat.get_chat_history():
+            role = message["role"]
+            content = message["content"]
+            timestamp = message["timestamp"][:19].replace("T", " ")
+            
+            if role == "user":
+                self.chat_display.insert(tk.END, f"Вы ({timestamp}):\n", "user_timestamp")
+                self.chat_display.insert(tk.END, f"{content}\n\n", "user_message")
+            else:
+                self.chat_display.insert(tk.END, f"ИИ-ассистент ({timestamp}):\n", "ai_timestamp")
+                self.chat_display.insert(tk.END, f"{content}\n\n", "ai_message")
+        
+        # Configure tags for styling
+        self.chat_display.tag_config("user_timestamp", foreground="#6366f1", font=('Segoe UI', 9, 'bold'))
+        self.chat_display.tag_config("user_message", foreground="#0f172a", font=('Segoe UI', 10))
+        self.chat_display.tag_config("ai_timestamp", foreground="#10b981", font=('Segoe UI', 9, 'bold'))
+        self.chat_display.tag_config("ai_message", foreground="#0f172a", font=('Segoe UI', 10))
+        
+        self.chat_display.see(tk.END)
+        self.chat_display.config(state="disabled")
+    
+    def send_chat_message(self, event=None):
+        """Send a message to the AI chat"""
+        user_message = self.chat_input.get().strip()
+        if user_message:
+            # Add user message to chat
+            self.ai_chat.add_message("user", user_message)
+            
+            # Clear input field
+            self.chat_input.delete(0, tk.END)
+            
+            # Update display
+            self.update_chat_display()
+            
+            # Get AI response
+            ai_response = self.ai_chat.get_response(user_message)
+            
+            # Update display with AI response
+            self.update_chat_display()
+    
+    def clear_chat(self):
+        """Clear the chat history"""
+        self.ai_chat.clear_chat_history()
+        self.update_chat_display()
+    
+    def show_ai_settings(self):
+        """Show AI settings dialog"""
+        # Create settings window
+        settings_window = tk.Toplevel(self.root)
+        settings_window.title("Настройки ИИ-чата")
+        settings_window.geometry("400x350")
+        settings_window.resizable(False, False)
+        settings_window.configure(bg='#f8fafc')
+        
+        # Center the window
+        settings_window.transient(self.root)
+        settings_window.grab_set()
+        
+        # Variables for settings
+        enable_external_ai = tk.BooleanVar(value=self.ai_chat.enable_external_ai)
+        api_key = tk.StringVar(value=self.ai_chat.external_ai_api_key)
+        model = tk.StringVar(value=self.ai_chat.external_ai_model)
+        base_url = tk.StringVar(value=self.ai_chat.external_ai_base_url)
+        
+        # Create widgets
+        ttk.Label(settings_window, text="Настройки ИИ-чата", font=('Segoe UI', 14, 'bold'), 
+                 background='#f8fafc').pack(pady=(20, 15))
+        
+        # Enable external AI checkbox
+        enable_frame = ttk.Frame(settings_window, padding="10", style='TLabelframe')
+        enable_frame.pack(fill=tk.X, padx=20, pady=5)
+        
+        ttk.Checkbutton(enable_frame, text="Включить внешний ИИ", variable=enable_external_ai).pack(anchor=tk.W)
+        
+        # API Key entry
+        api_frame = ttk.Frame(settings_window, padding="10", style='TLabelframe')
+        api_frame.pack(fill=tk.X, padx=20, pady=5)
+        
+        ttk.Label(api_frame, text="API ключ:").pack(anchor=tk.W)
+        api_entry = ttk.Entry(api_frame, textvariable=api_key, show="*", width=40)
+        api_entry.pack(fill=tk.X, pady=(5, 0))
+        
+        # Base URL entry
+        url_frame = ttk.Frame(settings_window, padding="10", style='TLabelframe')
+        url_frame.pack(fill=tk.X, padx=20, pady=5)
+        
+        ttk.Label(url_frame, text="Базовый URL:").pack(anchor=tk.W)
+        url_entry = ttk.Entry(url_frame, textvariable=base_url, width=40)
+        url_entry.pack(fill=tk.X, pady=(5, 0))
+        
+        # Model selection
+        model_frame = ttk.Frame(settings_window, padding="10", style='TLabelframe')
+        model_frame.pack(fill=tk.X, padx=20, pady=5)
+        
+        ttk.Label(model_frame, text="Модель ИИ:").pack(anchor=tk.W)
+        model_combo = ttk.Combobox(model_frame, textvariable=model, 
+                                  values=["gpt-3.5-turbo", "gpt-4", "claude-3", "other"],
+                                  state="readonly", width=37)
+        model_combo.pack(fill=tk.X, pady=(5, 0))
+        
+        # Note
+        note_frame = ttk.Frame(settings_window, padding="10", style='TLabelframe')
+        note_frame.pack(fill=tk.X, padx=20, pady=5)
+        
+        ttk.Label(note_frame, text="Примечание: Для использования внешних ИИ сервисов необходимо иметь действующий API ключ.",
+                 font=('Segoe UI', 9), foreground='#64748b', wraplength=350).pack(anchor=tk.W)
+        
+        # Buttons
+        button_frame = ttk.Frame(settings_window, padding="10")
+        button_frame.pack(fill=tk.X, padx=20, pady=20)
+        
+        def save_settings():
+            """Save AI chat settings"""
+            settings = {
+                'enable_external_ai': enable_external_ai.get(),
+                'external_ai_api_key': api_key.get(),
+                'external_ai_model': model.get(),
+                'external_ai_base_url': base_url.get()
+            }
+            self.ai_chat.update_settings(settings)
+            settings_window.destroy()
+            self.update_status("Настройки ИИ сохранены")
+        
+        ttk.Button(button_frame, text="Сохранить", command=save_settings, 
+                  style='Accent.TButton').pack(side=tk.RIGHT, padx=(10, 0))
+        ttk.Button(button_frame, text="Отмена", 
+                  command=settings_window.destroy, 
+                  style='Secondary.TButton').pack(side=tk.RIGHT)
 
 
 def main():

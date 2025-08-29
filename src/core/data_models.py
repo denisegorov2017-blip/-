@@ -5,22 +5,35 @@
 
 Этот файл определяет структуры данных, используемые в проекте,
 для обеспечения их корректности и целостности.
+
+ВАЖНО: Эти модели работают с данными инвентаризации, содержащими информацию о недостачах.
+Система анализирует эти данные для определения части недостач, связанной с усушкой.
 """
 
-from pydantic import BaseModel, Field, PositiveFloat, PositiveInt
+from pydantic import BaseModel, Field, PositiveFloat, PositiveInt, NonNegativeFloat
 from typing import List, Optional
 
 class NomenclatureRow(BaseModel):
     """
     Валидирует одну строку данных о номенклатуре, готовую к расчету.
+    
+    Важно: документы инвентаризации содержат информацию о недостачах, выявленных по результатам инвентаризации.
+    Причины недостач могут быть разные - усушка, утеря товара и другие факторы.
+    Система анализирует эту информацию для определения части недостач, связанной с усушкой.
+    
+    ВАЖНО: Система НЕ рассчитывает усушку по балансам, а анализирует уже имеющиеся 
+    данные о недостачах из инвентаризаций.
+    
+    ВАЖНО: Начальный остаток берется на начало периода по датам инвентаризации,
+    конечный остаток берется на конец периода по датам инвентаризации.
     """
     name: str = Field(..., alias='Номенклатура', description="Название номенклатурной позиции")
-    initial_balance: PositiveFloat = Field(..., alias='Начальный_остаток')
-    incoming: float = Field(..., alias='Приход', ge=0) # ge=0 означает "больше или равно 0"
-    outgoing: float = Field(..., alias='Расход', ge=0)
-    final_balance: float = Field(..., alias='Конечный_остаток', ge=0)
+    initial_balance: NonNegativeFloat = Field(..., alias='Начальный_остаток')
+    incoming: NonNegativeFloat = Field(..., alias='Приход')
+    outgoing: NonNegativeFloat = Field(..., alias='Расход')
+    final_balance: NonNegativeFloat = Field(..., alias='Конечный_остаток')
     storage_days: PositiveInt = Field(..., alias='Период_хранения_дней')
 
     class Config:
         # Позволяет модели работать, даже если в исходном словаре есть лишние поля
-        extra = 'ignore' 
+        extra = 'ignore'

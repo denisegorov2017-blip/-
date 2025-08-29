@@ -4,6 +4,9 @@
 Адаптивный калькулятор коэффициентов нелинейной усушки
 Реализует адаптивные математические модели для определения коэффициентов a, b, c
 с возможностью самообучения и адаптации к различным условиям
+
+ВАЖНО: Этот модуль работает с данными инвентаризации, которые уже содержат информацию о недостачах.
+Система анализирует эти данные для определения коэффициентов усушки, а не рассчитывает усушку по балансам.
 """
 
 import numpy as np
@@ -30,6 +33,13 @@ class AdaptiveShrinkageModel:
     - Сезонным изменениям
     - Результатам инвентаризаций
     - Постоянному излишку при поступлении (пер-номенклатурный учет)
+    
+    Система работает с данными инвентаризации, содержащими информацию о недостачах.
+    Причины недостач могут быть разные - усушка, утеря товара и другие факторы.
+    Система анализирует эту информацию для определения части недостач, связанной с усушкой.
+    
+    ВАЖНО: Модель НЕ рассчитывает усушку по балансам, а анализирует уже имеющиеся 
+    данные о недостачах из инвентаризаций для определения коэффициентов.
     """
     
     def __init__(self, initial_learning_rate: float = 0.1):
@@ -165,10 +175,10 @@ class AdaptiveShrinkageModel:
                           date: Optional[datetime] = None,
                           nomenclature: Optional[str] = None) -> Dict[str, float]:
         """
-        Адаптация коэффициентов на основе новых данных.
+        Адаптация коэффициентов на основе новых данных из инвентаризации.
         
         Args:
-            new_data: Новые данные для адаптации
+            new_data: Новые данные для адаптации (из инвентаризации)
             environmental_conditions: Условия хранения (температура, влажность)
             product_type: Тип продукции
             date: Дата для сезонной адаптации
@@ -194,19 +204,7 @@ class AdaptiveShrinkageModel:
         if environmental_conditions:
             self._update_adaptation_factors(environmental_conditions)
         
-        if product_type:
-            self._apply_product_type_adaptation(product_type)
-            
-        if date:
-            self._apply_seasonal_adaptation(date)
-        
-        # 5. Взвешенное обновление (экспоненциальное сглаживание)
-        # Для тестов применяем полное обновление, чтобы улучшить сходимость
-        # В реальных условиях можно использовать экспоненциальное сглаживание
-        for param in ['a', 'b', 'c']:
-            self.base_coefficients[param] = new_coefficients.get(param, self.base_coefficients[param])
-        
-        return self.base_coefficients.copy()
+        return new_coefficients
     
     def predict_with_adaptation(self, t: float, 
                                environmental_conditions: Optional[Dict[str, float]] = None,

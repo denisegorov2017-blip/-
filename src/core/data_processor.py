@@ -18,6 +18,10 @@ from core.adaptive_shrinkage_calculator import AdaptiveShrinkageModel
 class DataProcessor:
     """
     Выполняет расчеты коэффициентов усушки для набора данных.
+    
+    Система работает с данными инвентаризации, которые содержат информацию о недостачах.
+    Причины недостач могут быть разные - усушка, утеря товара и другие факторы.
+    Система анализирует эту информацию для определения части недостач, связанной с усушкой.
     """
     def __init__(self, 
                  config: Dict[str, Any], 
@@ -87,15 +91,20 @@ class DataProcessor:
                 'storage_days': row['Период_хранения_дней']
             }
 
-            # Проверяем на нулевую усушку
+            # Анализируем недостачи из данных инвентаризации
+            # Документы инвентаризации содержат информацию о недостачах, 
+            # система анализирует их для определения части, связанной с усушкой
             theoretical_balance = data_for_calc['initial_balance'] + data_for_calc['incoming'] - data_for_calc['outgoing']
-            actual_shrinkage = theoretical_balance - data_for_calc['final_balance']
+            inventory_shortage = theoretical_balance - data_for_calc['final_balance']
             
-            # Добавляем информацию об отклонении для всех записей, но помечаем как ошибку только значимые отклонения
+            # Добавляем информацию об отклонении для всех записей
+            # Система анализирует недостачи для определения части, связанной с усушкой
+            # Это ключевой момент: система НЕ рассчитывает усушку по балансам, 
+            # а анализирует уже имеющиеся данные о недостачах из инвентаризаций
             deviation_info = {
                 'Номенклатура': nomenclature,
-                'Причина': 'Нулевая усушка',
-                'Отклонение': actual_shrinkage,
+                'Причина': 'Анализ недостач из инвентаризации',
+                'Отклонение': inventory_shortage,
                 'Данные': {
                     'Начальный_остаток': data_for_calc['initial_balance'],
                     'Приход': data_for_calc['incoming'],
@@ -106,11 +115,11 @@ class DataProcessor:
             }
             
             # Помечаем как ошибку только значимые отклонения (больше 0.001 по модулю)
-            if abs(actual_shrinkage) > 0.001:
+            if abs(inventory_shortage) > 0.001:
                 errors.append(deviation_info)
-                log.info(f"Значимое отклонение для {nomenclature}: {actual_shrinkage}")
+                log.info(f"Значимое отклонение для {nomenclature}: {inventory_shortage}")
             # else:
-            #     log.info(f"Нулевая усушка для {nomenclature}: отклонение {actual_shrinkage}")
+            #     log.info(f"Нулевая усушка для {nomenclature}: отклонение {inventory_shortage}")
 
             if use_adaptive:
                 surplus_rate = surplus_rates.get(nomenclature, self.config.get('average_surplus_rate', 0.0))

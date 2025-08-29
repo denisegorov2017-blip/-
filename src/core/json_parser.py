@@ -89,24 +89,26 @@ def _parse_new_format(data):
             final_balance = float(str(summary_row[8]).replace(',', '.')) if len(summary_row) > 8 and summary_row[8] is not None else 0.0
 
             if initial_balance > 0:
+                # Документы инвентаризации содержат информацию о недостачах
+                # Система анализирует эту информацию для определения части, связанной с усушкой
                 theoretical_balance = initial_balance + incoming - outgoing
-                shrinkage = theoretical_balance - final_balance
+                inventory_shortage = theoretical_balance - final_balance
                 storage_days = 7  # Simplified, as in the original parser
 
-                if shrinkage > 0 and storage_days > 0:
-                    metric = {
-                        'Номенклатура': nom_row['name'],
-                        'Начальный_остаток': initial_balance,
-                        'Приход': incoming,
-                        'Расход': outgoing,
-                        'Конечный_остаток': final_balance,
-                        'Теоретический_остаток': theoretical_balance,
-                        'Усушка': shrinkage,
-                        'Коэффициент_усушки': shrinkage / initial_balance,
-                        'Период_хранения_дней': storage_days,
-                        'Количество_документов': 0  # Simplified
-                    }
-                    all_metrics.append(metric)
+                # Всегда добавляем запись для анализа недостач
+                metric = {
+                    'Номенклатура': nom_row['name'],
+                    'Начальный_остаток': initial_balance,
+                    'Приход': incoming,
+                    'Расход': outgoing,
+                    'Конечный_остаток': final_balance,
+                    'Теоретический_остаток': theoretical_balance,
+                    'Недостача_по_инвентаризации': inventory_shortage,
+                    'Коэффициент_недостачи': inventory_shortage / initial_balance,
+                    'Период_хранения_дней': storage_days,
+                    'Количество_документов': 0  # Simplified
+                }
+                all_metrics.append(metric)
         except (ValueError, IndexError):
             # Skip rows that don't have the expected numeric data
             continue
@@ -167,24 +169,26 @@ def _parse_old_format(validated_data):
             final_balance = float(str(summary_row[8]).replace(',', '.')) if len(summary_row) > 8 and summary_row[8] is not None else 0.0
 
             if initial_balance > 0:
+                # Документы инвентаризации содержат информацию о недостачах
+                # Система анализирует эту информацию для определения части, связанной с усушкой
                 theoretical_balance = initial_balance + incoming - outgoing
-                shrinkage = theoretical_balance - final_balance
+                inventory_shortage = theoretical_balance - final_balance
                 storage_days = 7  # Simplified, as in the original parser
 
-                if shrinkage > 0 and storage_days > 0:
-                    metric = {
-                        'Номенклатура': nom_row['name'],
-                        'Начальный_остаток': initial_balance,
-                        'Приход': incoming,
-                        'Расход': outgoing,
-                        'Конечный_остаток': final_balance,
-                        'Теоретический_остаток': theoretical_balance,
-                        'Усушка': shrinkage,
-                        'Коэффициент_усушки': shrinkage / initial_balance,
-                        'Период_хранения_дней': storage_days,
-                        'Количество_документов': 0  # Simplified
-                    }
-                    all_metrics.append(metric)
+                # Всегда добавляем запись для анализа недостач
+                metric = {
+                    'Номенклатура': nom_row['name'],
+                    'Начальный_остаток': initial_balance,
+                    'Приход': incoming,
+                    'Расход': outgoing,
+                    'Конечный_остаток': final_balance,
+                    'Теоретический_остаток': theoretical_balance,
+                    'Недостача_по_инвентаризации': inventory_shortage,
+                    'Коэффициент_недостачи': inventory_shortage / initial_balance,
+                    'Период_хранения_дней': storage_days,
+                    'Количество_документов': 0  # Simplified
+                }
+                all_metrics.append(metric)
         except (ValueError, IndexError):
             # Skip rows that don't have the expected numeric data
             continue

@@ -1,0 +1,360 @@
+{
+  "source_file": "результаты/hierarchy_test_file.xlsx",
+  "sheet_count": 2,
+  "sheets": {
+    "Sheet1": [
+      [
+        "col1",
+        "col2"
+      ],
+      [
+        1,
+        "A"
+      ],
+      [
+        2,
+        "B"
+      ]
+    ],
+    "Sheet2": [
+      [
+        "colA",
+        "colB"
+      ],
+      [
+        3,
+        "C"
+      ],
+      [
+        4,
+        "D"
+      ]
+    ]
+  },
+  "grouping_info": {
+    "Sheet1": {
+      "row_groups": [],
+      "column_groups": [],
+      "row_outline_levels": {},
+      "column_outline_levels": {}
+    },
+    "Sheet2": {
+      "row_groups": [],
+      "column_groups": [],
+      "row_outline_levels": {},
+      "column_outline_levels": {}
+    }
+  },
+  "formatting_info": {
+    "Sheet1": {
+      "cell_formats": {
+        "1_A": {
+          "font": {
+            "name": "Calibri",
+            "size": 11.0,
+            "bold": true,
+            "italic": false,
+            "color": "Values must be of type <class 'str'>"
+          },
+          "fill": {
+            "patternType": null,
+            "fgColor": "00000000"
+          },
+          "border": {
+            "left": "thin",
+            "right": "thin",
+            "top": "thin",
+            "bottom": "thin"
+          },
+          "alignment": {
+            "horizontal": "center",
+            "vertical": "top"
+          }
+        },
+        "1_B": {
+          "font": {
+            "name": "Calibri",
+            "size": 11.0,
+            "bold": true,
+            "italic": false,
+            "color": "Values must be of type <class 'str'>"
+          },
+          "fill": {
+            "patternType": null,
+            "fgColor": "00000000"
+          },
+          "border": {
+            "left": "thin",
+            "right": "thin",
+            "top": "thin",
+            "bottom": "thin"
+          },
+          "alignment": {
+            "horizontal": "center",
+            "vertical": "top"
+          }
+        },
+        "2_A": {
+          "font": {
+            "name": "Calibri",
+            "size": 11.0,
+            "bold": false,
+            "italic": false,
+            "color": "Values must be of type <class 'str'>"
+          },
+          "fill": {
+            "patternType": null,
+            "fgColor": "00000000"
+          },
+          "border": {
+            "left": null,
+            "right": null,
+            "top": null,
+            "bottom": null
+          },
+          "alignment": {
+            "horizontal": null,
+            "vertical": null
+          }
+        },
+        "2_B": {
+          "font": {
+            "name": "Calibri",
+            "size": 11.0,
+            "bold": false,
+            "italic": false,
+            "color": "Values must be of type <class 'str'>"
+          },
+          "fill": {
+            "patternType": null,
+            "fgColor": "00000000"
+          },
+          "border": {
+            "left": null,
+            "right": null,
+            "top": null,
+            "bottom": null
+          },
+          "alignment": {
+            "horizontal": null,
+            "vertical": null
+          }
+        },
+        "3_A": {
+          "font": {
+            "name": "Calibri",
+            "size": 11.0,
+            "bold": false,
+            "italic": false,
+            "color": "Values must be of type <class 'str'>"
+          },
+          "fill": {
+            "patternType": null,
+            "fgColor": "00000000"
+          },
+          "border": {
+            "left": null,
+            "right": null,
+            "top": null,
+            "bottom": null
+          },
+          "alignment": {
+            "horizontal": null,
+            "vertical": null
+          }
+        },
+        "3_B": {
+          "font": {
+            "name": "Calibri",
+            "size": 11.0,
+            "bold": false,
+            "italic": false,
+            "color": "Values must be of type <class 'str'>"
+          },
+          "fill": {
+            "patternType": null,
+            "fgColor": "00000000"
+          },
+          "border": {
+            "left": null,
+            "right": null,
+            "top": null,
+            "bottom": null
+          },
+          "alignment": {
+            "horizontal": null,
+            "vertical": null
+          }
+        }
+      },
+      "merged_cells": [],
+      "sheet_properties": {
+        "sheet_state": "visible",
+        "page_setup": {
+          "orientation": null,
+          "paperSize": null
+        }
+      }
+    },
+    "Sheet2": {
+      "cell_formats": {
+        "1_A": {
+          "font": {
+            "name": "Calibri",
+            "size": 11.0,
+            "bold": true,
+            "italic": false,
+            "color": "Values must be of type <class 'str'>"
+          },
+          "fill": {
+            "patternType": null,
+            "fgColor": "00000000"
+          },
+          "border": {
+            "left": "thin",
+            "right": "thin",
+            "top": "thin",
+            "bottom": "thin"
+          },
+          "alignment": {
+            "horizontal": "center",
+            "vertical": "top"
+          }
+        },
+        "1_B": {
+          "font": {
+            "name": "Calibri",
+            "size": 11.0,
+            "bold": true,
+            "italic": false,
+            "color": "Values must be of type <class 'str'>"
+          },
+          "fill": {
+            "patternType": null,
+            "fgColor": "00000000"
+          },
+          "border": {
+            "left": "thin",
+            "right": "thin",
+            "top": "thin",
+            "bottom": "thin"
+          },
+          "alignment": {
+            "horizontal": "center",
+            "vertical": "top"
+          }
+        },
+        "2_A": {
+          "font": {
+            "name": "Calibri",
+            "size": 11.0,
+            "bold": false,
+            "italic": false,
+            "color": "Values must be of type <class 'str'>"
+          },
+          "fill": {
+            "patternType": null,
+            "fgColor": "00000000"
+          },
+          "border": {
+            "left": null,
+            "right": null,
+            "top": null,
+            "bottom": null
+          },
+          "alignment": {
+            "horizontal": null,
+            "vertical": null
+          }
+        },
+        "2_B": {
+          "font": {
+            "name": "Calibri",
+            "size": 11.0,
+            "bold": false,
+            "italic": false,
+            "color": "Values must be of type <class 'str'>"
+          },
+          "fill": {
+            "patternType": null,
+            "fgColor": "00000000"
+          },
+          "border": {
+            "left": null,
+            "right": null,
+            "top": null,
+            "bottom": null
+          },
+          "alignment": {
+            "horizontal": null,
+            "vertical": null
+          }
+        },
+        "3_A": {
+          "font": {
+            "name": "Calibri",
+            "size": 11.0,
+            "bold": false,
+            "italic": false,
+            "color": "Values must be of type <class 'str'>"
+          },
+          "fill": {
+            "patternType": null,
+            "fgColor": "00000000"
+          },
+          "border": {
+            "left": null,
+            "right": null,
+            "top": null,
+            "bottom": null
+          },
+          "alignment": {
+            "horizontal": null,
+            "vertical": null
+          }
+        },
+        "3_B": {
+          "font": {
+            "name": "Calibri",
+            "size": 11.0,
+            "bold": false,
+            "italic": false,
+            "color": "Values must be of type <class 'str'>"
+          },
+          "fill": {
+            "patternType": null,
+            "fgColor": "00000000"
+          },
+          "border": {
+            "left": null,
+            "right": null,
+            "top": null,
+            "bottom": null
+          },
+          "alignment": {
+            "horizontal": null,
+            "vertical": null
+          }
+        }
+      },
+      "merged_cells": [],
+      "sheet_properties": {
+        "sheet_state": "visible",
+        "page_setup": {
+          "orientation": null,
+          "paperSize": null
+        }
+      }
+    }
+  },
+  "sheet_dimensions": {
+    "Sheet1": [
+      3,
+      2
+    ],
+    "Sheet2": [
+      3,
+      2
+    ]
+  }
+}
