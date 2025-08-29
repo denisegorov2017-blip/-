@@ -46,6 +46,32 @@ def launch_streamlit_dashboard():
     except FileNotFoundError:
         print("❌ Streamlit не найден. Установите его с помощью: pip install streamlit")
 
+def launch_cli_interface():
+    """Запуск командного интерфейса"""
+    print("🚀 Запуск командного интерфейса (CLI)...")
+    try:
+        # Убедимся, что мы в правильной директории
+        project_dir = os.path.dirname(os.path.abspath(__file__))
+        os.chdir(project_dir)
+        subprocess.run([sys.executable, "-m", "src.cli", "--help"], check=True)
+    except subprocess.CalledProcessError as e:
+        print(f"❌ Ошибка при запуске CLI интерфейса: {e}")
+    except FileNotFoundError:
+        print("❌ CLI модуль не найден.")
+
+def launch_api_server():
+    """Запуск API сервера"""
+    print("🚀 Запуск API сервера...")
+    try:
+        # Убедимся, что мы в правильной директории
+        project_dir = os.path.dirname(os.path.abspath(__file__))
+        os.chdir(project_dir)
+        subprocess.run([sys.executable, "-m", "src.api"], check=True)
+    except subprocess.CalledProcessError as e:
+        print(f"❌ Ошибка при запуске API сервера: {e}")
+    except FileNotFoundError:
+        print("❌ API модуль не найден.")
+
 def show_menu():
     """Показать меню выбора интерфейса"""
     print("\n" + "="*60)
@@ -55,14 +81,16 @@ def show_menu():
     print("1. 🖥️  Графический интерфейс (Flet)")
     print("2. 🖼️  Графический интерфейс (Tkinter)")
     print("3. 📊 Дашборд (Streamlit)")
-    print("4. ❌ Выход")
+    print("4. 💻 Командный интерфейс (CLI)")
+    print("5. 🔌 API сервер")
+    print("6. ❌ Выход")
     print("="*60)
 
 def main():
     """Основная функция запуска"""
     while True:
         show_menu()
-        choice = input("Введите номер выбора (1-4): ").strip()
+        choice = input("Введите номер выбора (1-6): ").strip()
         
         if choice == "1":
             launch_flet_gui()
@@ -71,10 +99,14 @@ def main():
         elif choice == "3":
             launch_streamlit_dashboard()
         elif choice == "4":
+            launch_cli_interface()
+        elif choice == "5":
+            launch_api_server()
+        elif choice == "6":
             print("👋 До свидания!")
             break
         else:
-            print("❌ Неверный выбор. Пожалуйста, введите число от 1 до 4.")
+            print("❌ Неверный выбор. Пожалуйста, введите число от 1 до 6.")
         
         # Небольшая пауза перед следующим меню
         time.sleep(1)

@@ -223,7 +223,7 @@ async def calculate_shrinkage(request: CalculationRequest):
     """
     try:
         # Преобразуем данные в DataFrame
-        data_dicts = [item.dict() for item in request.data]
+        data_dicts = [item.model_dump() for item in request.data]
         dataset = pd.DataFrame(data_dicts)
         
         # Создаем систему расчета
@@ -249,11 +249,17 @@ async def calculate_shrinkage(request: CalculationRequest):
             )
         else:
             error_msg = results.get('message', 'Неизвестная ошибка')
-            raise HTTPException(status_code=400, detail=error_msg)
+            return CalculationResponse(
+                status="error",
+                message=error_msg
+            )
             
     except Exception as e:
         log.exception(f"Ошибка при расчете усушки: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        return CalculationResponse(
+            status="error",
+            message=str(e)
+        )
 
 
 @app.post("/api/v1/upload")
@@ -337,7 +343,7 @@ async def update_settings(settings: SettingsUpdate):
         settings_manager = SettingsManager()
         
         # Преобразуем модель в словарь и фильтруем None значения
-        update_dict = {k: v for k, v in settings.dict().items() if v is not None}
+        update_dict = {k: v for k, v in settings.model_dump().items() if v is not None}
         
         if update_dict:
             success = settings_manager.update_settings(update_dict)

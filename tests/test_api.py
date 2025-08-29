@@ -122,7 +122,7 @@ def test_calculate_shrinkage_success(mock_dataframe, mock_shrinkage_system):
     )
     
     # Отправка запроса
-    response = client.post("/api/v1/calculate", json=request_data.dict())
+    response = client.post("/api/v1/calculate", json=request_data.model_dump())
     
     # Проверка результата
     assert response.status_code == 200
@@ -173,12 +173,14 @@ def test_calculate_shrinkage_failure(mock_dataframe, mock_shrinkage_system):
     )
     
     # Отправка запроса
-    response = client.post("/api/v1/calculate", json=request_data.dict())
+    response = client.post("/api/v1/calculate", json=request_data.model_dump())
     
-    # Проверка результата (должна быть ошибка 400)
-    assert response.status_code == 400
+    # Проверка результата (теперь это должен быть успешный ответ с ошибкой в теле)
+    assert response.status_code == 200
     result = response.json()
-    assert "detail" in result
+    assert result["status"] == "error"
+    assert "message" in result
+    assert result["message"] == "Ошибка расчета"
 
 
 def test_job_status_not_found():
