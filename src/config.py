@@ -101,6 +101,24 @@ DEFAULT_CONFIG: Dict[str, Any] = {
     
     # Базовый URL для ИИ API
     'external_ai_base_url': 'https://api.openai.com/v1',
+    
+    # Включить использование локального ИИ (LM Studio)
+    'enable_local_ai': False,
+    
+    # Модель локального ИИ для использования
+    'local_ai_model': 'gpt-3.5-turbo',
+    
+    # Базовый URL для локального ИИ API
+    'local_ai_base_url': 'http://localhost:1234/v1',
+    
+    # Включить использование OpenRouter
+    'enable_openrouter': False,
+    
+    # API ключ для OpenRouter
+    'openrouter_api_key': '',
+    
+    # Модель OpenRouter для использования
+    'openrouter_model': 'openai/gpt-3.5-turbo',
 }
 
 
@@ -275,6 +293,30 @@ CONFIG_VALIDATION_RULES: Dict[str, Dict[str, Any]] = {
         'required': True
     },
     'external_ai_base_url': {
+        'type': str,
+        'required': True
+    },
+    'enable_local_ai': {
+        'type': bool,
+        'required': True
+    },
+    'local_ai_model': {
+        'type': str,
+        'required': True
+    },
+    'local_ai_base_url': {
+        'type': str,
+        'required': True
+    },
+    'enable_openrouter': {
+        'type': bool,
+        'required': True
+    },
+    'openrouter_api_key': {
+        'type': str,
+        'required': False
+    },
+    'openrouter_model': {
         'type': str,
         'required': True
     },

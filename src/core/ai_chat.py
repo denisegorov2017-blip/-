@@ -43,10 +43,22 @@ class AIChat:
         self._load_settings()
         
         self.chat_history_file = self.config.get('chat_history_file', 'результаты/ai_chat_history.json')
+        
+        # Внешний ИИ настройки
         self.enable_external_ai = self.config.get('enable_external_ai', False)
         self.external_ai_api_key = self.config.get('external_ai_api_key', '')
         self.external_ai_model = self.config.get('external_ai_model', 'gpt-3.5-turbo')
         self.external_ai_base_url = self.config.get('external_ai_base_url', 'https://api.openai.com/v1')
+        
+        # Локальный ИИ настройки (LM Studio)
+        self.enable_local_ai = self.config.get('enable_local_ai', False)
+        self.local_ai_model = self.config.get('local_ai_model', 'gpt-3.5-turbo')
+        self.local_ai_base_url = self.config.get('local_ai_base_url', 'http://localhost:1234/v1')
+        
+        # OpenRouter настройки
+        self.enable_openrouter = self.config.get('enable_openrouter', False)
+        self.openrouter_api_key = self.config.get('openrouter_api_key', '')
+        self.openrouter_model = self.config.get('openrouter_model', 'openai/gpt-3.5-turbo')
         
         # Загружаем историю чата
         self.chat_history = self._load_chat_history()
@@ -140,8 +152,12 @@ class AIChat:
         # Добавляем сообщение пользователя в историю
         self.add_message("user", user_message)
         
-        # Если включен внешний ИИ и есть API ключ, используем его
-        if self.enable_external_ai and self.external_ai_api_key:
+        # Определяем тип ИИ для использования
+        if self.enable_openrouter and self.openrouter_api_key:
+            response = self.get_openrouter_response(user_message)
+        elif self.enable_local_ai:
+            response = self.get_local_ai_response(user_message)
+        elif self.enable_external_ai and self.external_ai_api_key:
             response = self.get_external_ai_response(user_message)
         else:
             # Генерируем ответ на основе встроенного ИИ
@@ -303,6 +319,163 @@ class AIChat:
             log.error(f"Неожиданная ошибка при получении ответа от внешнего ИИ: {e}")
             return f"Произошла ошибка при взаимодействии с внешним ИИ: {str(e)}"
     
+    def get_local_ai_response(self, user_message: str) -> str:
+        """
+        Получает ответ от локального ИИ через LM Studio.
+        
+        Args:
+            user_message (str): Сообщение пользователя.
+            
+        Returns:
+            str: Ответ локального ИИ.
+        """
+        if not self.enable_local_ai:
+            return "Локальный ИИ не включен. Пожалуйста, включите локальный ИИ в настройках."
+        
+        try:
+            # Подготавливаем историю чата для отправки локальному ИИ
+            messages = []
+            # Добавляем системное сообщение
+            messages.append({
+                "role": "system",
+                "content": "Вы - помощник по системе расчета коэффициентов усушки. Помогайте пользователям с вопросами о работе системы, подготовке данных и интерпретации результатов. Отвечайте на русском языке."
+            })
+            
+            # Добавляем последние сообщения из истории (ограничиваем 10 последними сообщениями)
+            recent_messages = self.chat_history[-10:] if len(self.chat_history) > 10 else self.chat_history
+            for msg in recent_messages:
+                # Пропускаем сообщения с ролью system, так как мы добавили свое
+                if msg["role"] != "system":
+                    messages.append({
+                        "role": msg["role"],
+                        "content": msg["content"]
+                    })
+            
+            # Добавляем текущее сообщение пользователя
+            messages.append({
+                "role": "user",
+                "content": user_message
+            })
+            
+            # Подготавливаем заголовки для API запроса
+            headers = {
+                "Content-Type": "application/json"
+            }
+            
+            # Подготавливаем тело запроса
+            payload = {
+                "model": self.local_ai_model,
+                "messages": messages,
+                "temperature": 0.7,
+                "max_tokens": 500
+            }
+            
+            # Отправляем запрос к локальному серверу LM Studio
+            response = requests.post(
+                f"{self.local_ai_base_url}/chat/completions",
+                headers=headers,
+                json=payload,
+                timeout=60  # Увеличенный таймаут для локальных моделей
+            )
+            
+            # Проверяем статус ответа
+            response.raise_for_status()
+            
+            # Извлекаем ответ из JSON
+            response_data = response.json()
+            ai_response = response_data["choices"][0]["message"]["content"].strip()
+            
+            return ai_response
+            
+        except requests.exceptions.RequestException as e:
+            log.error(f"Ошибка сети при запросе к локальному ИИ: {e}")
+            return f"Ошибка сети при взаимодействии с локальным ИИ: {str(e)}. Убедитесь, что LM Studio запущен и сервер активен."
+        except KeyError as e:
+            log.error(f"Ошибка обработки ответа от локального ИИ: {e}")
+            return "Ошибка обработки ответа от локального ИИ. Проверьте настройки локального ИИ."
+        except Exception as e:
+            log.error(f"Неожиданная ошибка при получении ответа от локального ИИ: {e}")
+            return f"Произошла ошибка при взаимодействии с локальным ИИ: {str(e)}"
+    
+    def get_openrouter_response(self, user_message: str) -> str:
+        """
+        Получает ответ от OpenRouter.
+        
+        Args:
+            user_message (str): Сообщение пользователя.
+            
+        Returns:
+            str: Ответ от OpenRouter.
+        """
+        if not self.enable_openrouter or not self.openrouter_api_key:
+            return "OpenRouter не настроен. Пожалуйста, настройте API ключ OpenRouter в конфигурации."
+        
+        try:
+            # Подготавливаем историю чата для отправки OpenRouter
+            messages = []
+            # Добавляем системное сообщение
+            messages.append({
+                "role": "system",
+                "content": "Вы - помощник по системе расчета коэффициентов усушки. Помогайте пользователям с вопросами о работе системы, подготовке данных и интерпретации результатов. Отвечайте на русском языке."
+            })
+            
+            # Добавляем последние сообщения из истории (ограничиваем 10 последними сообщениями)
+            recent_messages = self.chat_history[-10:] if len(self.chat_history) > 10 else self.chat_history
+            for msg in recent_messages:
+                # Пропускаем сообщения с ролью system, так как мы добавили свое
+                if msg["role"] != "system":
+                    messages.append({
+                        "role": msg["role"],
+                        "content": msg["content"]
+                    })
+            
+            # Добавляем текущее сообщение пользователя
+            messages.append({
+                "role": "user",
+                "content": user_message
+            })
+            
+            # Подготавливаем заголовки для API запроса
+            headers = {
+                "Authorization": f"Bearer {self.openrouter_api_key}",
+                "Content-Type": "application/json"
+            }
+            
+            # Подготавливаем тело запроса
+            payload = {
+                "model": self.openrouter_model,
+                "messages": messages,
+                "temperature": 0.7,
+                "max_tokens": 500
+            }
+            
+            # Отправляем запрос к OpenRouter API
+            response = requests.post(
+                "https://openrouter.ai/api/v1/chat/completions",
+                headers=headers,
+                json=payload,
+                timeout=30
+            )
+            
+            # Проверяем статус ответа
+            response.raise_for_status()
+            
+            # Извлекаем ответ из JSON
+            response_data = response.json()
+            ai_response = response_data["choices"][0]["message"]["content"].strip()
+            
+            return ai_response
+            
+        except requests.exceptions.RequestException as e:
+            log.error(f"Ошибка сети при запросе к OpenRouter: {e}")
+            return f"Ошибка сети при взаимодействии с OpenRouter: {str(e)}"
+        except KeyError as e:
+            log.error(f"Ошибка обработки ответа от OpenRouter: {e}")
+            return "Ошибка обработки ответа от OpenRouter. Проверьте настройки OpenRouter."
+        except Exception as e:
+            log.error(f"Неожиданная ошибка при получении ответа от OpenRouter: {e}")
+            return f"Произошла ошибка при взаимодействии с OpenRouter: {str(e)}"
+    
     def update_settings(self, settings: Dict[str, Any]):
         """
         Обновляет настройки чата.
@@ -315,6 +488,16 @@ class AIChat:
         self.external_ai_api_key = self.config.get('external_ai_api_key', '')
         self.external_ai_model = self.config.get('external_ai_model', 'gpt-3.5-turbo')
         self.external_ai_base_url = self.config.get('external_ai_base_url', 'https://api.openai.com/v1')
+        
+        # Локальный ИИ настройки
+        self.enable_local_ai = self.config.get('enable_local_ai', False)
+        self.local_ai_model = self.config.get('local_ai_model', 'gpt-3.5-turbo')
+        self.local_ai_base_url = self.config.get('local_ai_base_url', 'http://localhost:1234/v1')
+        
+        # OpenRouter настройки
+        self.enable_openrouter = self.config.get('enable_openrouter', False)
+        self.openrouter_api_key = self.config.get('openrouter_api_key', '')
+        self.openrouter_model = self.config.get('openrouter_model', 'openai/gpt-3.5-turbo')
         
         # Сохраняем настройки в файл конфигурации
         self._save_settings()

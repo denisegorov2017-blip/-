@@ -1,0 +1,11 @@
+{
+  "chat_history_file": "C:\\Users\\D_909\\AppData\\Local\\Temp\\tmpqbe_lb8n\\test_chat_history.json",
+  "enable_external_ai": true,
+  "external_ai_api_key": "new-external-key",
+  "enable_local_ai": true,
+  "local_ai_model": "test-model",
+  "enable_openrouter": true,
+  "openrouter_api_key": "test-key",
+  "local_ai_base_url": "http://test.local:1234/v1",
+  "openrouter_model": "test/provider"
+}
