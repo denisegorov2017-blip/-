@@ -22,7 +22,7 @@ python scripts/auto_git_push.py
 Вы также можете указать собственное сообщение для коммита:
 
 ```bash
-python scripts/auto_git_push.py "feat: add new data processing feature"
+python scripts/auto_git_push.py "feat: добавление новой функциональности"
 ```
 
 ### Автоматический запуск
@@ -52,6 +52,7 @@ python scripts/auto_git_push.py "feat: add new data processing feature"
 - Работает с кириллическими путями и сообщениями
 - Поддерживает все типы изменений файлов (добавление, изменение, удаление)
 - Использует стандарты Conventional Commits для сообщений коммитов
+- Автоматически определяет тип изменений и формирует соответствующее сообщение
 
 ## Требования
 
@@ -67,25 +68,27 @@ python scripts/auto_git_push.py "feat: add new data processing feature"
 ## Примеры сообщений коммитов
 
 ### Автоматически сгенерированные сообщения:
-- `chore: auto-commit changes from 2025-08-30 14:30:25`
-- `chore: auto-commit changes from 2025-08-30 15:00:42`
-- `chore: auto-commit changes from 2025-08-30 15:30:18`
+- `feat: добавление новой функциональности`
+- `fix: исправление ошибок`
+- `docs: обновление документации`
+- `test: изменения в тестах`
+- `chore: автоматический коммит от 2025-08-30 14:30:25`
 
 ### Примеры пользовательских сообщений:
-- `feat: add automatic git push functionality`
-- `fix: resolve encoding issues in auto_git_push.py`
-- `docs: update documentation for git auto push feature`
-- `refactor: improve error handling in git automation`
+- `feat: добавление функции автоматической отправки в Git`
+- `fix: исправление ошибок кодировки в auto_git_push.py`
+- `docs: обновление документации по автоматической отправке`
+- `refactor: улучшение обработки ошибок в скрипте Git`
 
 ### Примеры сообщений для специфических изменений:
-- `feat: add .gitignore for log files`
-- `docs: update README with auto push information`
-- `fix: handle cyrillic paths in git automation`
-- `chore: add support for conventional commit messages`
+- `feat: добавление .gitignore для игнорирования логов`
+- `docs: обновление README с информацией об автоматической отправке`
+- `fix: обработка кириллических путей в автоматизации Git`
+- `chore: добавление поддержки русскоязычных сообщений коммитов`
 
 ### Рекомендации по написанию сообщений коммитов:
 
-1. Используйте повелительное наклонение: "add" а не "added" или "adds"
+1. Используйте повелительное наклонение: "добавить" а не "добавлено" или "добавляет"
 2. Начинайте с типа изменения:
    - `feat:` Новая функциональность
    - `fix:` Исправление ошибок
@@ -96,3 +99,13 @@ python scripts/auto_git_push.py "feat: add new data processing feature"
    - `chore:` Технические задачи и обслуживание
 3. Делайте сообщения информативными но краткими
 4. Не ставьте точку в конце заголовка коммита
+
+### Автоматическое определение типа коммитов
+
+Скрипт автоматически анализирует измененные файлы и определяет тип коммита:
+- Если изменены .py файлы в src/ или core/ директориях → `feat:`
+- Если изменены тестовые файлы → `test:`
+- Если изменены документы (.md, .txt, .rst) → `docs:`
+- Во всех остальных случаях → `chore:`
+
+Это позволяет генерировать осмысленные сообщения коммитов без необходимости вручную указывать их тип.
