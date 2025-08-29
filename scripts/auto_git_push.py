@@ -88,6 +88,36 @@ def git_add_all():
     logger.info("Все изменения добавлены в индекс")
     return True
 
+def analyze_changes():
+    """
+    Анализирует изменения для формирования осмысленного сообщения коммита
+    
+    Returns:
+        str: Тип изменений (feat, fix, docs, chore и т.д.)
+    """
+    stdout, stderr, returncode = run_git_command("git diff --cached --name-only")
+    
+    if returncode != 0:
+        logger.warning("Не удалось проанализировать изменения")
+        return "chore"
+    
+    changed_files = stdout.strip().split('\n') if stdout.strip() else []
+    
+    # Определяем тип изменений на основе расширений файлов и путей
+    has_py_files = any(f.endswith('.py') for f in changed_files)
+    has_doc_files = any(f.endswith(('.md', '.txt', '.rst')) for f in changed_files)
+    has_src_files = any('src/' in f or 'core/' in f for f in changed_files)
+    has_test_files = any('test' in f.lower() for f in changed_files)
+    
+    if has_src_files and has_py_files:
+        return "feat"  # Новая функциональность в коде
+    elif has_test_files:
+        return "test"  # Изменения в тестах
+    elif has_doc_files:
+        return "docs"  # Изменения в документации
+    else:
+        return "chore"  # Технические изменения
+
 def git_commit(message=None):
     """
     Создает коммит с изменениями
@@ -99,9 +129,26 @@ def git_commit(message=None):
         bool: True если успешно, False если ошибка
     """
     if not message:
-        # Генерируем сообщение коммита по стандартам Conventional Commits
-        timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        message = f"chore: auto-commit changes from {timestamp}"
+        # Анализируем изменения для определения типа коммита
+        commit_type = analyze_changes()
+        
+        # Генерируем сообщение коммита по стандартам Conventional Commits на русском
+        if commit_type == "feat":
+            message = "feat: добавление новой функциональности"
+        elif commit_type == "fix":
+            message = "fix: исправление ошибок"
+        elif commit_type == "docs":
+            message = "docs: обновление документации"
+        elif commit_type == "test":
+            message = "test: изменения в тестах"
+        elif commit_type == "style":
+            message = "style: форматирование кода"
+        elif commit_type == "refactor":
+            message = "refactor: рефакторинг кода"
+        else:
+            # Для chore и других типов
+            timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            message = f"chore: автоматический коммит от {timestamp}"
     
     # Экранируем кавычки в сообщении
     message = message.replace('"', '\\"')
