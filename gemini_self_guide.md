@@ -116,7 +116,31 @@ python scripts/auto_git_push.py
 Вы также можете указать собственное сообщение для коммита:
 
 ```bash
-python scripts/auto_git_push.py "Мое собственное сообщение коммита"
+python scripts/auto_git_push.py "feat: add new data processing feature"
+```
+
+#### Формат сообщений коммитов
+
+Скрипт использует стандарты [Conventional Commits](https://www.conventionalcommits.org/) для форматирования сообщений:
+
+- `feat:` Новая функциональность
+- `fix:` Исправление ошибок
+- `docs:` Изменения в документации
+- `style:` Изменения в оформлении кода
+- `refactor:` Рефакторинг кода
+- `test:` Добавление или изменение тестов
+- `chore:` Технические задачи и обслуживание
+
+Примеры:
+```bash
+# Автоматически сгенерированное сообщение
+chore: auto-commit changes from 2025-08-30 14:30:25
+
+# Пользовательские сообщения
+feat: add automatic git push functionality
+fix: resolve encoding issues in auto_git_push.py
+docs: update documentation for git auto push feature
+refactor: improve error handling in git automation
 ```
 
 #### Логирование
