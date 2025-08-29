@@ -28,6 +28,10 @@ try:
         restore_database_from_backup, get_database_info,
         test_database_connection, vacuum_database
     )
+    from src.core.database.timescaledb import (
+        check_timescaledb_extension, optimize_with_timescaledb,
+        get_timescaledb_info
+    )
 except ImportError:
     # Если импорт не работает, пробуем другой путь
     try:
@@ -37,6 +41,10 @@ except ImportError:
             restore_database_from_backup, get_database_info,
             test_database_connection, vacuum_database
         )
+        from core.database.timescaledb import (
+            check_timescaledb_extension, optimize_with_timescaledb,
+            get_timescaledb_info
+        )
     except ImportError:
         # Последняя попытка
         sys.path.insert(0, os.path.join(project_root, 'src'))
@@ -45,6 +53,10 @@ except ImportError:
             initialize_database, create_database_backup, 
             restore_database_from_backup, get_database_info,
             test_database_connection, vacuum_database
+        )
+        from core.database.timescaledb import (
+            check_timescaledb_extension, optimize_with_timescaledb,
+            get_timescaledb_info
         )
 
 def main():
@@ -62,6 +74,8 @@ def main():
   python cli.py restore backup.db.bak   # Восстановление из резервной копии
   python cli.py vacuum                  # Оптимизация базы данных
   python cli.py test                    # Тестирование подключения
+  python cli.py timescaledb             # Информация о TimescaleDB
+  python cli.py optimize                # Оптимизация с TimescaleDB
         """
     )
     
@@ -87,6 +101,12 @@ def main():
     # Команда тестирования подключения
     subparsers.add_parser('test', help='Тестирование подключения к базе данных')
     
+    # Команда получения информации о TimescaleDB
+    subparsers.add_parser('timescaledb', help='Получение информации о TimescaleDB')
+    
+    # Команда оптимизации с TimescaleDB
+    subparsers.add_parser('optimize', help='Оптимизация таблиц с TimescaleDB')
+    
     # Если не передана команда, показываем помощь
     if len(sys.argv) == 1:
         parser.print_help()
@@ -107,6 +127,10 @@ def main():
             handle_vacuum()
         elif args.command == 'test':
             handle_test()
+        elif args.command == 'timescaledb':
+            handle_timescaledb()
+        elif args.command == 'optimize':
+            handle_optimize()
         else:
             parser.print_help()
             sys.exit(1)
@@ -139,6 +163,7 @@ def handle_info():
         info = get_database_info()
         
         print("\n=== Информация о базе данных ===")
+        print(f"Тип базы данных: {info['database_type']}")
         print(f"URL базы данных: {info['database_url']}")
         print(f"Размер базы данных: {info['size_mb']} МБ ({info['size_bytes']} байт)")
         print(f"Общее количество записей: {info['total_rows']}")
@@ -165,7 +190,7 @@ def handle_backup(backup_path=None):
         if backup_file:
             log.success(f"Резервная копия создана: {backup_file}")
         else:
-            log.warning("Не удалось создать резервную копию")
+            log.warning("Не удалось создать резервную копию (проверьте тип базы данных)")
     except Exception as e:
         log.error(f"Ошибка при создании резервной копии: {e}")
         raise
@@ -187,7 +212,7 @@ def handle_restore(backup_file):
         if success:
             log.success("База данных успешно восстановлена")
         else:
-            log.error("Не удалось восстановить базу данных")
+            log.error("Не удалось восстановить базу данных (проверьте тип базы данных)")
     except Exception as e:
         log.error(f"Ошибка при восстановлении базы данных: {e}")
         raise
@@ -220,6 +245,59 @@ def handle_test():
             log.error("Не удалось подключиться к базе данных")
     except Exception as e:
         log.error(f"Ошибка при тестировании подключения: {e}")
+        raise
+
+def handle_timescaledb():
+    """
+    Обработка команды получения информации о TimescaleDB.
+    """
+    log.info("Получение информации о TimescaleDB...")
+    try:
+        # Проверяем доступность TimescaleDB
+        timescaledb_available = check_timescaledb_extension()
+        
+        if not timescaledb_available:
+            print("\n=== TimescaleDB ===")
+            print("Расширение TimescaleDB не доступно")
+            print("Для установки следуйте инструкциям в документации")
+            print("====================\n")
+            return
+            
+        # Получаем подробную информацию
+        info = get_timescaledb_info()
+        
+        print("\n=== TimescaleDB ===")
+        print(f"Доступен: {info['timescaledb_available']}")
+        if info['version']:
+            print(f"Версия: {info['version']}")
+        if 'hypertables' in info:
+            print(f"Количество гипертаблиц: {info['hypertables_count']}")
+            if info['hypertables']:
+                print("Гипертаблицы:")
+                for hypertable in info['hypertables']:
+                    print(f"  - {hypertable['name']} ({hypertable['dimensions']} измерений)")
+        print("==================\n")
+        
+        log.success("Информация о TimescaleDB получена")
+    except Exception as e:
+        log.error(f"Ошибка при получении информации о TimescaleDB: {e}")
+        raise
+
+def handle_optimize():
+    """
+    Обработка команды оптимизации с TimescaleDB.
+    """
+    log.info("Оптимизация таблиц с TimescaleDB...")
+    try:
+        success = optimize_with_timescaledb()
+        if success:
+            log.success("Оптимизация с TimescaleDB выполнена успешно")
+            # Показываем обновленную информацию
+            handle_timescaledb()
+        else:
+            log.warning("Не удалось выполнить оптимизацию с TimescaleDB")
+    except Exception as e:
+        log.error(f"Ошибка при оптимизации с TimescaleDB: {e}")
         raise
 
 if __name__ == '__main__':

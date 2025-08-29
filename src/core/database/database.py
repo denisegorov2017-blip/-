@@ -28,9 +28,8 @@ def get_database_url():
     Returns:
         str: URL для подключения к базе данных
     """
-    # Для начала используем SQLite для упрощения развертывания
-    # В будущем можно переключиться на PostgreSQL
-    return f"sqlite:///{DB_PATH}"
+    from src.config import DEFAULT_CONFIG
+    return DEFAULT_CONFIG.get('database_url', f"sqlite:///{DB_PATH}")
 
 def create_database_engine():
     """
@@ -43,15 +42,15 @@ def create_database_engine():
         database_url = get_database_url()
         log.info(f"Создание подключения к базе данных: {database_url}")
         
-        # Для SQLite используем StaticPool для избежания проблем с блокировками
         if database_url.startswith('sqlite'):
+            # Для SQLite используем StaticPool для избежания проблем с блокировками
             engine = create_engine(
                 database_url,
                 poolclass=StaticPool,
                 connect_args={'check_same_thread': False},
                 echo=False  # Установите True для отладки SQL запросов
             )
-        else:
+        elif database_url.startswith('postgresql'):
             # Для PostgreSQL
             engine = create_engine(
                 database_url,
@@ -59,6 +58,8 @@ def create_database_engine():
                 max_overflow=20,
                 echo=False  # Установите True для отладки SQL запросов
             )
+        else:
+            raise ValueError(f"Неподдерживаемый тип базы данных: {database_url}")
         
         return engine
     except Exception as e:

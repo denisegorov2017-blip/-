@@ -19,6 +19,7 @@ from src.core.improved_json_parser import parse_from_json
 from src.core.specialized_fish_data_processor import FishBatchDataProcessor
 from src.core.test_data_manager import TestDataManager
 from src.core.ai_chat import AIChat  # Добавляем импорт ИИ чата
+from src.core.settings_manager import SettingsManager  # Добавляем импорт менеджера настроек
 from src.logger_config import log
 
 
@@ -26,7 +27,14 @@ class ShrinkageCalculatorGUI:
     def __init__(self, root):
         self.root = root
         self.root.title("Система Расчета Коэффициентов Усушки")
-        self.root.geometry("1100x750")
+        
+        # Initialize Settings Manager
+        self.settings_manager = SettingsManager()
+        
+        # Load window settings
+        window_width = self.settings_manager.get_setting('window_width', 1100)
+        window_height = self.settings_manager.get_setting('window_height', 750)
+        self.root.geometry(f"{window_width}x{window_height}")
         self.root.minsize(900, 650)
         
         # Initialize AI Chat
@@ -37,7 +45,7 @@ class ShrinkageCalculatorGUI:
         
         # Variables
         self.file_path = tk.StringVar()
-        self.use_adaptive = tk.BooleanVar(value=False)
+        self.use_adaptive = tk.BooleanVar(value=self.settings_manager.get_setting('use_adaptive_model', False))
         self.use_surplus = tk.BooleanVar(value=False)
         self.surplus_rate = tk.StringVar(value="5.0")
         self.status_text = tk.StringVar(value="Готов к работе")
@@ -109,6 +117,16 @@ class ShrinkageCalculatorGUI:
         
     def create_widgets(self):
         """Create all GUI widgets with modern design"""
+        # Create menu bar
+        menubar = tk.Menu(self.root)
+        self.root.config(menu=menubar)
+        
+        # Settings menu
+        settings_menu = tk.Menu(menubar, tearoff=0)
+        menubar.add_cascade(label="Настройки", menu=settings_menu)
+        settings_menu.add_command(label="Системные настройки", command=self.show_system_settings)
+        settings_menu.add_command(label="Настройки ИИ-чата", command=self.show_ai_settings)
+        
         # Main container
         main_frame = ttk.Frame(self.root, padding="25")
         main_frame.pack(fill=tk.BOTH, expand=True)
@@ -320,6 +338,12 @@ class ShrinkageCalculatorGUI:
 3. Настройте параметры расчета
 4. Нажмите "Рассчитать коэффициенты"
 5. Откройте отчеты для просмотра результатов
+
+СИСТЕМНЫЕ НАСТРОЙКИ:
+• Общие настройки: Тип модели, период расчета, точность, адаптивная модель
+• Настройки интерфейса: Тема, язык, размер окна
+• Настройки базы данных: Подключение, резервное копирование, верификация
+• Настройки вывода: Директория результатов, автоматическое открытие отчетов
 
 ИИ-ЧАТ:
 Встроенный ИИ-ассистент помогает пользователям понимать работу системы и правильно готовить данные для расчетов.
@@ -690,6 +714,222 @@ class ShrinkageCalculatorGUI:
         ttk.Button(button_frame, text="Отмена", 
                   command=settings_window.destroy, 
                   style='Secondary.TButton').pack(side=tk.RIGHT)
+    
+    def show_system_settings(self):
+        """Show comprehensive system settings dialog"""
+        # Create settings window
+        settings_window = tk.Toplevel(self.root)
+        settings_window.title("Настройки системы")
+        settings_window.geometry("600x700")
+        settings_window.resizable(True, True)
+        settings_window.configure(bg='#f8fafc')
+        
+        # Center the window
+        settings_window.transient(self.root)
+        settings_window.grab_set()
+        
+        # Create notebook for tabbed interface
+        notebook = ttk.Notebook(settings_window)
+        notebook.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
+        
+        # === General Settings Tab ===
+        general_frame = ttk.Frame(notebook, padding="20")
+        notebook.add(general_frame, text="Общие")
+        
+        # Model settings
+        model_frame = ttk.LabelFrame(general_frame, text="Настройки расчетов", padding="15")
+        model_frame.pack(fill=tk.X, pady=(0, 15))
+        
+        # Model type
+        ttk.Label(model_frame, text="Тип модели:").pack(anchor=tk.W)
+        model_type = tk.StringVar(value=self.settings_manager.get_setting('model_type', 'exponential'))
+        model_combo = ttk.Combobox(model_frame, textvariable=model_type,
+                                  values=["exponential", "linear", "polynomial"],
+                                  state="readonly", width=30)
+        model_combo.pack(fill=tk.X, pady=(5, 10))
+        
+        # Default period
+        ttk.Label(model_frame, text="Период по умолчанию (дней):").pack(anchor=tk.W)
+        default_period = tk.IntVar(value=self.settings_manager.get_setting('default_period', 7))
+        period_spin = ttk.Spinbox(model_frame, from_=1, to=365, textvariable=default_period, width=30)
+        period_spin.pack(fill=tk.X, pady=(5, 10))
+        
+        # Min accuracy
+        ttk.Label(model_frame, text="Минимальная точность (%):").pack(anchor=tk.W)
+        min_accuracy = tk.DoubleVar(value=self.settings_manager.get_setting('min_accuracy', 50.0))
+        accuracy_scale = ttk.Scale(model_frame, from_=0, to=100, variable=min_accuracy, orient=tk.HORIZONTAL)
+        accuracy_scale.pack(fill=tk.X, pady=(5, 0))
+        accuracy_value = ttk.Label(model_frame, text=f"{min_accuracy.get():.1f}%")
+        accuracy_value.pack(anchor=tk.E)
+        
+        def update_accuracy_label(val):
+            accuracy_value.config(text=f"{float(val):.1f}%")
+        accuracy_scale.config(command=update_accuracy_label)
+        
+        # Use adaptive model
+        use_adaptive_model = tk.BooleanVar(value=self.settings_manager.get_setting('use_adaptive_model', False))
+        ttk.Checkbutton(model_frame, text="Использовать адаптивную модель", 
+                       variable=use_adaptive_model).pack(anchor=tk.W, pady=(10, 0))
+        
+        # Average surplus rate
+        ttk.Label(model_frame, text="Средний процент излишка (%):").pack(anchor=tk.W, pady=(10, 0))
+        avg_surplus_rate = tk.DoubleVar(value=self.settings_manager.get_setting('average_surplus_rate', 0.0) * 100)
+        surplus_scale = ttk.Scale(model_frame, from_=0, to=20, variable=avg_surplus_rate, orient=tk.HORIZONTAL)
+        surplus_scale.pack(fill=tk.X, pady=(5, 0))
+        surplus_value = ttk.Label(model_frame, text=f"{avg_surplus_rate.get():.1f}%")
+        surplus_value.pack(anchor=tk.E)
+        
+        def update_surplus_label(val):
+            surplus_value.config(text=f"{float(val):.1f}%")
+        surplus_scale.config(command=update_surplus_label)
+        
+        # === Interface Settings Tab ===
+        interface_frame = ttk.Frame(notebook, padding="20")
+        notebook.add(interface_frame, text="Интерфейс")
+        
+        # Theme settings
+        theme_frame = ttk.LabelFrame(interface_frame, text="Тема интерфейса", padding="15")
+        theme_frame.pack(fill=tk.X, pady=(0, 15))
+        
+        theme = tk.StringVar(value=self.settings_manager.get_setting('theme', 'light'))
+        ttk.Radiobutton(theme_frame, text="Светлая", variable=theme, value="light").pack(anchor=tk.W)
+        ttk.Radiobutton(theme_frame, text="Темная", variable=theme, value="dark").pack(anchor=tk.W)
+        ttk.Radiobutton(theme_frame, text="Системная", variable=theme, value="system").pack(anchor=tk.W)
+        
+        # Language settings
+        lang_frame = ttk.LabelFrame(interface_frame, text="Язык", padding="15")
+        lang_frame.pack(fill=tk.X, pady=(0, 15))
+        
+        language = tk.StringVar(value=self.settings_manager.get_setting('language', 'ru'))
+        ttk.Radiobutton(lang_frame, text="Русский", variable=language, value="ru").pack(anchor=tk.W)
+        ttk.Radiobutton(lang_frame, text="English", variable=language, value="en").pack(anchor=tk.W)
+        
+        # Window size
+        window_frame = ttk.LabelFrame(interface_frame, text="Размер окна", padding="15")
+        window_frame.pack(fill=tk.X, pady=(0, 15))
+        
+        ttk.Label(window_frame, text="Ширина:").pack(anchor=tk.W)
+        window_width = tk.IntVar(value=self.settings_manager.get_setting('window_width', 1100))
+        width_spin = ttk.Spinbox(window_frame, from_=800, to=2000, textvariable=window_width, width=30)
+        width_spin.pack(fill=tk.X, pady=(5, 10))
+        
+        ttk.Label(window_frame, text="Высота:").pack(anchor=tk.W)
+        window_height = tk.IntVar(value=self.settings_manager.get_setting('window_height', 750))
+        height_spin = ttk.Spinbox(window_frame, from_=600, to=1500, textvariable=window_height, width=30)
+        height_spin.pack(fill=tk.X, pady=(5, 0))
+        
+        # === Database Settings Tab ===
+        database_frame = ttk.Frame(notebook, padding="20")
+        notebook.add(database_frame, text="База данных")
+        
+        # Enable database
+        enable_database = tk.BooleanVar(value=self.settings_manager.get_setting('enable_database', True))
+        ttk.Checkbutton(database_frame, text="Включить базу данных", 
+                       variable=enable_database).pack(anchor=tk.W)
+        
+        # Database URL
+        ttk.Label(database_frame, text="URL базы данных:").pack(anchor=tk.W, pady=(10, 0))
+        database_url = tk.StringVar(value=self.settings_manager.get_setting('database_url', 'sqlite:///shrinkage_database.db'))
+        url_entry = ttk.Entry(database_frame, textvariable=database_url, width=50)
+        url_entry.pack(fill=tk.X, pady=(5, 10))
+        
+        # Backup settings
+        backup_frame = ttk.LabelFrame(database_frame, text="Резервное копирование", padding="15")
+        backup_frame.pack(fill=tk.X, pady=(10, 0))
+        
+        ttk.Label(backup_frame, text="Путь к резервным копиям:").pack(anchor=tk.W)
+        backup_path = tk.StringVar(value=self.settings_manager.get_setting('database_backup_path', 'backups/'))
+        backup_entry = ttk.Entry(backup_frame, textvariable=backup_path, width=50)
+        backup_entry.pack(fill=tk.X, pady=(5, 10))
+        
+        ttk.Label(backup_frame, text="Интервал резервного копирования (часы):").pack(anchor=tk.W)
+        backup_interval = tk.IntVar(value=self.settings_manager.get_setting('database_backup_interval', 24))
+        interval_spin = ttk.Spinbox(backup_frame, from_=1, to=168, textvariable=backup_interval, width=30)
+        interval_spin.pack(fill=tk.X, pady=(5, 0))
+        
+        # Enable verification
+        enable_verification = tk.BooleanVar(value=self.settings_manager.get_setting('enable_verification', False))
+        ttk.Checkbutton(database_frame, text="Включить верификацию коэффициентов", 
+                       variable=enable_verification, pady=(15, 0)).pack(anchor=tk.W)
+        
+        # === Output Settings Tab ===
+        output_frame = ttk.Frame(notebook, padding="20")
+        notebook.add(output_frame, text="Вывод")
+        
+        # Output directory
+        ttk.Label(output_frame, text="Директория для результатов:").pack(anchor=tk.W)
+        output_dir = tk.StringVar(value=self.settings_manager.get_setting('output_dir', 'результаты'))
+        dir_entry = ttk.Entry(output_frame, textvariable=output_dir, width=50)
+        dir_entry.pack(fill=tk.X, pady=(5, 10))
+        
+        # Auto open reports
+        auto_open_reports = tk.BooleanVar(value=self.settings_manager.get_setting('auto_open_reports', True))
+        ttk.Checkbutton(output_frame, text="Автоматически открывать отчеты", 
+                       variable=auto_open_reports).pack(anchor=tk.W)
+        
+        # Report theme
+        ttk.Label(output_frame, text="Тема отчетов:").pack(anchor=tk.W, pady=(10, 0))
+        report_theme = tk.StringVar(value=self.settings_manager.get_setting('report_theme', 'default'))
+        theme_combo = ttk.Combobox(output_frame, textvariable=report_theme,
+                                  values=["default", "dark", "light", "colorful"],
+                                  state="readonly", width=30)
+        theme_combo.pack(fill=tk.X, pady=(5, 0))
+        
+        # === Buttons ===
+        button_frame = ttk.Frame(settings_window, padding="10")
+        button_frame.pack(fill=tk.X, padx=10, pady=(0, 10))
+        
+        def save_settings():
+            """Save all system settings"""
+            # Update settings
+            new_settings = {
+                'model_type': model_type.get(),
+                'default_period': default_period.get(),
+                'min_accuracy': min_accuracy.get(),
+                'use_adaptive_model': use_adaptive_model.get(),
+                'average_surplus_rate': avg_surplus_rate.get() / 100.0,  # Convert from percentage
+                'theme': theme.get(),
+                'language': language.get(),
+                'window_width': window_width.get(),
+                'window_height': window_height.get(),
+                'enable_database': enable_database.get(),
+                'database_url': database_url.get(),
+                'database_backup_path': backup_path.get(),
+                'database_backup_interval': backup_interval.get(),
+                'enable_verification': enable_verification.get(),
+                'output_dir': output_dir.get(),
+                'auto_open_reports': auto_open_reports.get(),
+                'report_theme': report_theme.get()
+            }
+            
+            # Update settings manager
+            self.settings_manager.update_settings(new_settings)
+            self.settings_manager.save_settings()
+            
+            # Update UI variables
+            self.use_adaptive.set(use_adaptive_model.get())
+            
+            # Update window size
+            self.root.geometry(f"{window_width.get()}x{window_height.get()}")
+            
+            settings_window.destroy()
+            self.update_status("Системные настройки сохранены")
+        
+        def reset_to_defaults():
+            """Reset all settings to defaults"""
+            if messagebox.askyesno("Сброс настроек", "Вы уверены, что хотите сбросить все настройки к значениям по умолчанию?"):
+                self.settings_manager.reset_to_defaults()
+                settings_window.destroy()
+                self.update_status("Настройки сброшены к значениям по умолчанию")
+                messagebox.showinfo("Сброс настроек", "Настройки сброшены к значениям по умолчанию. Перезапустите приложение для применения изменений.")
+        
+        ttk.Button(button_frame, text="Сбросить", command=reset_to_defaults,
+                  style='Secondary.TButton').pack(side=tk.LEFT, padx=(0, 10))
+        ttk.Button(button_frame, text="Отмена", 
+                  command=settings_window.destroy,
+                  style='Secondary.TButton').pack(side=tk.RIGHT, padx=(10, 0))
+        ttk.Button(button_frame, text="Сохранить", command=save_settings,
+                  style='Accent.TButton').pack(side=tk.RIGHT)
 
 
 def main():

@@ -41,31 +41,35 @@ def create_database_backup(backup_path: str = None) -> str:
     try:
         # Получаем путь к текущей базе данных
         db_url = get_database_url()
-        if not db_url.startswith('sqlite:///'):
+        
+        if db_url.startswith('sqlite:///'):
+            db_path = db_url.replace('sqlite:///', '')
+            
+            # Создаем директорию для резервных копий, если она не существует
+            if backup_path is None:
+                backup_dir = os.path.join(os.path.dirname(db_path), 'backups')
+            else:
+                backup_dir = backup_path
+                
+            os.makedirs(backup_dir, exist_ok=True)
+            
+            # Создаем имя файла резервной копии с временной меткой
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            db_filename = os.path.basename(db_path)
+            backup_filename = f"{db_filename}_{timestamp}.bak"
+            backup_file_path = os.path.join(backup_dir, backup_filename)
+            
+            # Копируем файл базы данных
+            shutil.copy2(db_path, backup_file_path)
+            log.info(f"Резервная копия базы данных создана: {backup_file_path}")
+            
+            return backup_file_path
+        elif db_url.startswith('postgresql://'):
+            log.warning("Резервное копирование для PostgreSQL должно выполняться через pg_dump")
+            return None
+        else:
             log.warning("Резервное копирование поддерживается только для SQLite")
             return None
-            
-        db_path = db_url.replace('sqlite:///', '')
-        
-        # Создаем директорию для резервных копий, если она не существует
-        if backup_path is None:
-            backup_dir = os.path.join(os.path.dirname(db_path), 'backups')
-        else:
-            backup_dir = backup_path
-            
-        os.makedirs(backup_dir, exist_ok=True)
-        
-        # Создаем имя файла резервной копии с временной меткой
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        db_filename = os.path.basename(db_path)
-        backup_filename = f"{db_filename}_{timestamp}.bak"
-        backup_file_path = os.path.join(backup_dir, backup_filename)
-        
-        # Копируем файл базы данных
-        shutil.copy2(db_path, backup_file_path)
-        log.info(f"Резервная копия базы данных создана: {backup_file_path}")
-        
-        return backup_file_path
     except Exception as e:
         log.error(f"Ошибка при создании резервной копии базы данных: {e}")
         raise
@@ -88,21 +92,25 @@ def restore_database_from_backup(backup_file_path: str) -> bool:
             
         # Получаем путь к текущей базе данных
         db_url = get_database_url()
-        if not db_url.startswith('sqlite:///'):
+        
+        if db_url.startswith('sqlite:///'):
+            db_path = db_url.replace('sqlite:///', '')
+            
+            # Закрываем все соединения с базой данных
+            # Это важно для SQLite, так как он блокирует файл
+            # В реальном приложении здесь нужно будет корректно закрыть все сессии
+            
+            # Копируем файл резервной копии на место базы данных
+            shutil.copy2(backup_file_path, db_path)
+            log.success(f"База данных восстановлена из резервной копии: {backup_file_path}")
+            
+            return True
+        elif db_url.startswith('postgresql://'):
+            log.warning("Восстановление для PostgreSQL должно выполняться через pg_restore")
+            return False
+        else:
             log.warning("Восстановление поддерживается только для SQLite")
             return False
-            
-        db_path = db_url.replace('sqlite:///', '')
-        
-        # Закрываем все соединения с базой данных
-        # Это важно для SQLite, так как он блокирует файл
-        # В реальном приложении здесь нужно будет корректно закрыть все сессии
-        
-        # Копируем файл резервной копии на место базы данных
-        shutil.copy2(backup_file_path, db_path)
-        log.success(f"База данных восстановлена из резервной копии: {backup_file_path}")
-        
-        return True
     except Exception as e:
         log.error(f"Ошибка при восстановлении базы данных из резервной копии: {e}")
         raise
@@ -116,16 +124,33 @@ def get_database_size() -> int:
     """
     try:
         db_url = get_database_url()
-        if not db_url.startswith('sqlite:///'):
-            log.warning("Получение размера поддерживается только для SQLite")
-            return 0
-            
-        db_path = db_url.replace('sqlite:///', '')
         
-        if os.path.exists(db_path):
-            size = os.path.getsize(db_path)
-            return size
+        if db_url.startswith('sqlite:///'):
+            db_path = db_url.replace('sqlite:///', '')
+            
+            if os.path.exists(db_path):
+                size = os.path.getsize(db_path)
+                return size
+            else:
+                return 0
+        elif db_url.startswith('postgresql://'):
+            # Для PostgreSQL получаем размер через SQL запрос
+            Session = get_db_session()
+            session = Session()
+            
+            try:
+                result = session.execute(text(
+                    "SELECT pg_database_size(current_database())"
+                ))
+                size = result.scalar()
+                session.close()
+                return size if size else 0
+            except Exception as e:
+                session.close()
+                log.error(f"Ошибка при получении размера PostgreSQL базы данных: {e}")
+                return 0
         else:
+            log.warning("Получение размера поддерживается только для SQLite и PostgreSQL")
             return 0
     except Exception as e:
         log.error(f"Ошибка при получении размера базы данных: {e}")
@@ -150,7 +175,10 @@ def get_table_row_counts() -> dict:
         for table_name in table_names:
             try:
                 # Используем сырые SQL запросы для подсчета строк
-                result = session.execute(text(f"SELECT COUNT(*) FROM {table_name}"))
+                if get_database_url().startswith('postgresql://'):
+                    result = session.execute(text(f"SELECT COUNT(*) FROM \"{table_name}\""))
+                else:
+                    result = session.execute(text(f"SELECT COUNT(*) FROM {table_name}"))
                 count = result.scalar()
                 row_counts[table_name] = count
             except Exception as e:
@@ -185,13 +213,14 @@ def cleanup_old_data(days_old: int = 30) -> int:
 
 def vacuum_database() -> bool:
     """
-    Выполняет оптимизацию базы данных (VACUUM для SQLite).
+    Выполняет оптимизацию базы данных (VACUUM для SQLite, REINDEX для PostgreSQL).
     
     Returns:
         bool: True, если оптимизация успешна
     """
     try:
         db_url = get_database_url()
+        
         if db_url.startswith('sqlite:///'):
             Session = get_db_session()
             session = Session()
@@ -203,8 +232,20 @@ def vacuum_database() -> bool:
             
             log.info("База данных оптимизирована (VACUUM)")
             return True
+        elif db_url.startswith('postgresql://'):
+            Session = get_db_session()
+            session = Session()
+            
+            # Для PostgreSQL выполняем REINDEX и ANALYZE
+            session.execute(text("REINDEX DATABASE CURRENT_DATABASE()"))
+            session.execute(text("ANALYZE"))
+            session.commit()
+            session.close()
+            
+            log.info("База данных оптимизирована (REINDEX и ANALYZE)")
+            return True
         else:
-            log.warning("Оптимизация (VACUUM) поддерживается только для SQLite")
+            log.warning("Оптимизация поддерживается только для SQLite и PostgreSQL")
             return False
     except Exception as e:
         log.error(f"Ошибка при оптимизации базы данных: {e}")
@@ -244,8 +285,17 @@ def get_database_info() -> dict:
         size = get_database_size()
         table_counts = get_table_row_counts()
         
+        # Определяем тип базы данных
+        if db_url.startswith('sqlite:///'):
+            db_type = 'SQLite'
+        elif db_url.startswith('postgresql://'):
+            db_type = 'PostgreSQL'
+        else:
+            db_type = 'Unknown'
+        
         info = {
             'database_url': db_url,
+            'database_type': db_type,
             'size_bytes': size,
             'size_mb': round(size / (1024 * 1024), 2) if size > 0 else 0,
             'tables': table_counts,
