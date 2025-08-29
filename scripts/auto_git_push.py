@@ -99,8 +99,9 @@ def git_commit(message=None):
         bool: True если успешно, False если ошибка
     """
     if not message:
+        # Генерируем сообщение коммита по стандартам Conventional Commits
         timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        message = f"Автоматический коммит от {timestamp}"
+        message = f"chore: auto-commit changes from {timestamp}"
     
     # Экранируем кавычки в сообщении
     message = message.replace('"', '\\"')
