@@ -52,6 +52,9 @@ class ShrinkageCalculatorGUI:
         self.status_text = tk.StringVar(value="Готов к работе")
         self.report_path = None
         self.error_report_path = None
+        self.no_inventory_report_path = None
+        self.model_comparison_report_path = None
+        self.nomenclature_performance_report_path = None
         self.use_fish_batch_mode = tk.BooleanVar(value=False)
         
         # Create UI
@@ -232,6 +235,20 @@ class ShrinkageCalculatorGUI:
                                           state="disabled",
                                           style='Secondary.TButton')
         self.error_report_btn.pack(side=tk.LEFT, padx=(0, 10))
+        
+        self.no_inventory_report_btn = ttk.Button(button_frame, 
+                                                 text="Открыть отчет без инвентаризации", 
+                                                 command=self.open_no_inventory_report,
+                                                 state="disabled",
+                                                 style='Secondary.TButton')
+        self.no_inventory_report_btn.pack(side=tk.LEFT, padx=(0, 10))
+        
+        self.advanced_reports_btn = ttk.Button(button_frame, 
+                                              text="Расширенные отчеты", 
+                                              command=self.open_advanced_reports_dialog,
+                                              state="disabled",
+                                              style='Secondary.TButton')
+        self.advanced_reports_btn.pack(side=tk.LEFT, padx=(0, 10))
         
         # Progress bar
         self.progress = ttk.Progressbar(main_tab, mode='indeterminate')
@@ -430,20 +447,56 @@ class ShrinkageCalculatorGUI:
                     )
                     
                     if results.get('status') == 'success':
-                        self.report_path = results.get('reports', {}).get('coefficients', '')
-                        self.error_report_path = results.get('reports', {}).get('errors', '')
+                        # Store all report paths
+                        reports = results.get('reports', {})
+                        advanced_reports = results.get('advanced_reports', {})
+                        
+                        self.report_path = reports.get('coefficients', '')
+                        self.error_report_path = reports.get('errors', '')
+                        self.no_inventory_report_path = reports.get('no_inventory', '')
+                        self.model_comparison_report_path = advanced_reports.get('model_comparison', '')
+                        self.nomenclature_performance_report_path = advanced_reports.get('nomenclature_performance', '')
+                        
                         summary = results.get('summary', {})
                         self.update_status(f"Готово! Обработано {summary.get('total_positions', 0)} позиций")
                         self.update_status(f"Средняя точность: {summary.get('avg_accuracy', 0):.2f}%")
                         self.update_status(f"Ошибок: {summary.get('error_count', 0)}")
-                        self.update_status(f"Отчет сохранен в: {self.report_path}")
+                        self.update_status(f"Основной отчет сохранен в: {self.report_path}")
                         log.info("Расчет успешно завершен.")
                         
                         # Enable report buttons if reports exist
                         if self.report_path and os.path.exists(self.report_path):
                             self.report_btn.config(state="normal")
+                        else:
+                            self.report_btn.config(state="disabled")
+                            
                         if self.error_report_path and os.path.exists(self.error_report_path):
                             self.error_report_btn.config(state="normal")
+                        else:
+                            self.error_report_btn.config(state="disabled")
+                            
+                        if self.no_inventory_report_path and os.path.exists(self.no_inventory_report_path):
+                            self.no_inventory_report_btn.config(state="normal")
+                        else:
+                            self.no_inventory_report_btn.config(state="disabled")
+                            
+                        # Enable advanced reports button if any advanced reports exist
+                        if (self.model_comparison_report_path and os.path.exists(self.model_comparison_report_path)) or \\
+                           (self.nomenclature_performance_report_path and os.path.exists(self.nomenclature_performance_report_path)):
+                            self.advanced_reports_btn.config(state="normal")
+                        else:
+                            self.advanced_reports_btn.config(state="disabled")
+                        
+                        # Auto-open reports if setting is enabled
+                        if self.settings_manager.get_setting('auto_open_reports', True):
+                            # Open main report automatically
+                            if self.report_path and os.path.exists(self.report_path):
+                                try:
+                                    webbrowser.open(f"file://{os.path.abspath(self.report_path)}")
+                                    self.update_status("Основной отчет открыт автоматически")
+                                except Exception as ex:
+                                    log.error(f"Ошибка автоматического открытия основного отчета: {ex}")
+                                    self.update_status("Не удалось открыть основной отчет автоматически")
                     else:
                         error_msg = results.get('message', 'Неизвестная ошибка')
                         self.update_status(f"Ошибка расчета: {error_msg}")
@@ -504,24 +557,55 @@ class ShrinkageCalculatorGUI:
                     )
                     
                     if results.get('status') == 'success':
-                        self.report_path = results.get('reports', {}).get('coefficients', '')
-                        self.error_report_path = results.get('reports', {}).get('errors', '')
+                        # Store all report paths
+                        reports = results.get('reports', {})
+                        advanced_reports = results.get('advanced_reports', {})
+                        
+                        self.report_path = reports.get('coefficients', '')
+                        self.error_report_path = reports.get('errors', '')
+                        self.no_inventory_report_path = reports.get('no_inventory', '')
+                        self.model_comparison_report_path = advanced_reports.get('model_comparison', '')
+                        self.nomenclature_performance_report_path = advanced_reports.get('nomenclature_performance', '')
+                        
                         summary = results.get('summary', {})
                         self.update_status(f"Готово! Обработано {summary.get('total_positions', 0)} позиций")
                         self.update_status(f"Средняя точность: {summary.get('avg_accuracy', 0):.2f}%")
                         self.update_status(f"Ошибок: {summary.get('error_count', 0)}")
-                        self.update_status(f"Отчет сохранен в: {self.report_path}")
+                        self.update_status(f"Основной отчет сохранен в: {self.report_path}")
                         log.info("Расчет успешно завершен.")
                         
                         # Enable report buttons if reports exist
                         if self.report_path and os.path.exists(self.report_path):
                             self.report_btn.config(state="normal")
+                        else:
+                            self.report_btn.config(state="disabled")
+                            
                         if self.error_report_path and os.path.exists(self.error_report_path):
                             self.error_report_btn.config(state="normal")
+                        else:
+                            self.error_report_btn.config(state="disabled")
+                            
+                        if self.no_inventory_report_path and os.path.exists(self.no_inventory_report_path):
+                            self.no_inventory_report_btn.config(state="normal")
+                        else:
+                            self.no_inventory_report_btn.config(state="disabled")
+                            
+                        # Enable advanced reports button if any advanced reports exist
+                        if (self.model_comparison_report_path and os.path.exists(self.model_comparison_report_path)) or \\
+                           (self.nomenclature_performance_report_path and os.path.exists(self.nomenclature_performance_report_path)):
+                            self.advanced_reports_btn.config(state="normal")
+                        else:
+                            self.advanced_reports_btn.config(state="disabled")
                     else:
                         error_msg = results.get('message', 'Неизвестная ошибка')
                         self.update_status(f"Ошибка расчета: {error_msg}")
                         log.error(f"Ошибка в процессе расчета: {error_msg}")
+                        
+                        # Disable all report buttons on error
+                        self.report_btn.config(state="disabled")
+                        self.error_report_btn.config(state="disabled")
+                        self.no_inventory_report_btn.config(state="disabled")
+                        self.advanced_reports_btn.config(state="disabled")
                 except Exception as ex:
                     self.update_status(f"Критическая ошибка: {ex}")
                     log.exception("Произошла критическая ошибка в GUI.")
@@ -555,6 +639,80 @@ class ShrinkageCalculatorGUI:
                 messagebox.showerror("Ошибка", f"Не удалось открыть отчет об ошибках: {e}")
         else:
             messagebox.showwarning("Предупреждение", "Отчет об ошибках не найден")
+    
+    def open_no_inventory_report(self):
+        """Open the no inventory report in browser"""
+        if self.no_inventory_report_path and os.path.exists(self.no_inventory_report_path):
+            try:
+                webbrowser.open(f"file://{os.path.abspath(self.no_inventory_report_path)}")
+                self.update_status("Отчет по позициям без инвентаризации открыт в браузере")
+            except Exception as e:
+                messagebox.showerror("Ошибка", f"Не удалось открыть отчет по позициям без инвентаризации: {e}")
+        else:
+            messagebox.showwarning("Предупреждение", "Отчет по позициям без инвентаризации не найден")
+    
+    def open_advanced_reports_dialog(self):
+        """Open dialog to select advanced reports"""
+        # Create dialog window
+        dialog = tk.Toplevel(self.root)
+        dialog.title("Расширенные отчеты")
+        dialog.geometry("400x200")
+        dialog.resizable(False, False)
+        dialog.configure(bg='#f8fafc')
+        
+        # Center the dialog
+        dialog.transient(self.root)
+        dialog.grab_set()
+        
+        # Create label
+        ttk.Label(dialog, text="Выберите расширенный отчет:", 
+                 font=('Segoe UI', 12, 'bold'), background='#f8fafc').pack(pady=10)
+        
+        # Create buttons for advanced reports
+        button_frame = ttk.Frame(dialog)
+        button_frame.pack(fill=tk.BOTH, expand=True, padx=20, pady=10)
+        
+        # Model comparison report button
+        if self.model_comparison_report_path and os.path.exists(self.model_comparison_report_path):
+            ttk.Button(button_frame, text="Отчет о сравнении моделей", 
+                      command=lambda: self.open_model_comparison_report(dialog)).pack(pady=5, fill=tk.X)
+        
+        # Nomenclature performance report button
+        if self.nomenclature_performance_report_path and os.path.exists(self.nomenclature_performance_report_path):
+            ttk.Button(button_frame, text="Отчет о производительности номенклатур", 
+                      command=lambda: self.open_nomenclature_performance_report(dialog)).pack(pady=5, fill=tk.X)
+        
+        # Close button
+        ttk.Button(button_frame, text="Закрыть", 
+                  command=dialog.destroy).pack(pady=10, fill=tk.X)
+    
+    def open_model_comparison_report(self, parent_dialog=None):
+        """Open the model comparison report in browser"""
+        if parent_dialog:
+            parent_dialog.destroy()
+            
+        if self.model_comparison_report_path and os.path.exists(self.model_comparison_report_path):
+            try:
+                webbrowser.open(f"file://{os.path.abspath(self.model_comparison_report_path)}")
+                self.update_status("Отчет о сравнении моделей открыт в браузере")
+            except Exception as e:
+                messagebox.showerror("Ошибка", f"Не удалось открыть отчет о сравнении моделей: {e}")
+        else:
+            messagebox.showwarning("Предупреждение", "Отчет о сравнении моделей не найден")
+    
+    def open_nomenclature_performance_report(self, parent_dialog=None):
+        """Open the nomenclature performance report in browser"""
+        if parent_dialog:
+            parent_dialog.destroy()
+            
+        if self.nomenclature_performance_report_path and os.path.exists(self.nomenclature_performance_report_path):
+            try:
+                webbrowser.open(f"file://{os.path.abspath(self.nomenclature_performance_report_path)}")
+                self.update_status("Отчет о производительности номенклатур открыт в браузере")
+            except Exception as e:
+                messagebox.showerror("Ошибка", f"Не удалось открыть отчет о производительности номенклатур: {e}")
+        else:
+            messagebox.showwarning("Предупреждение", "Отчет о производительности номенклатур не найден")
     
     def open_results_folder(self):
         """Open the results folder in file explorer"""

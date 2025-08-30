@@ -67,10 +67,19 @@ class DataProcessor:
         errors = []
         use_adaptive = self.config.get('use_adaptive_model', False)
         
+        # Этап 1: Предварительная обработка и валидация данных
+        log.info("Этап 1/5: Предварительная обработка и валидация данных...")
+        
+        # Этап 2: Настройка конфигурации
+        log.info("Этап 2/5: Настройка конфигурации...")
+        
         # Последовательная обработка каждой строки данных
         for index, row_data in dataset.iterrows():
             try:
-                # Этап 1: Валидация данных
+                # Этап 3: Последовательная обработка каждой строки данных:
+                log.info(f"Этап 3/5: Обработка строки {index+1}/{len(dataset)}...")
+                
+                # Этап 3.1: Валидация строки
                 validated_data = self._validate_row_data(row_data)
                 if validated_data is None:
                     # Если валидация не прошла, добавляем в ошибки
@@ -92,21 +101,24 @@ class DataProcessor:
                 
                 row = validated_data.model_dump(by_alias=True)
                 
-                # Этап 2: Подготовка данных для расчета
+                # Этап 3.2: Подготовка данных
                 nomenclature = row['Номенклатура']
                 data_for_calc = self._prepare_calculation_data(row)
                 
-                # Этап 3: Анализ недостач из инвентаризации
+                # Этап 3.3: Анализ инвентаризации
                 deviation_info = self._analyze_inventory_shortage(data_for_calc, nomenclature)
                 if deviation_info and abs(deviation_info['Отклонение']) > 0.001:
                     errors.append(deviation_info)
                     log.info(f"Значимое отклонение для {nomenclature}: {deviation_info['Отклонение']}")
                 
-                # Этап 4: Расчет коэффициентов
+                # Этап 3.4: Расчет
                 if use_adaptive:
                     result = self._calculate_with_adaptive_model(data_for_calc, nomenclature, surplus_rates)
                 else:
                     result = self._calculate_with_basic_model(data_for_calc, nomenclature)
+                
+                # Этап 3.5: Валидация результата
+                # Здесь можно добавить валидацию результата если необходимо
                 
                 results.append(result)
                 
@@ -126,6 +138,12 @@ class DataProcessor:
                 errors.append(error_info)
                 log.error(f"Ошибка при обработке строки {index} ({row_data.get('Номенклатура', 'N/A')}): {e}")
                 continue
+        
+        # Этап 4: Агрегация результатов
+        log.info("Этап 4/5: Агрегация результатов...")
+        
+        # Этап 5: Финальная валидация
+        log.info("Этап 5/5: Финальная валидация...")
         
         return {
             'coefficients': results,

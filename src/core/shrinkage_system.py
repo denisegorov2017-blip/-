@@ -228,24 +228,37 @@ class ShrinkageSystem:
             log.info("Используется адаптивная модель расчета.")
         
         try:
-            # Этап 1: Проверка входных данных
+            # Этап 1: Валидация входных данных и предварительная обработка
+            log.info("Этап 1/8: Валидация входных данных и предварительная обработка...")
             if dataset.empty:
                 log.warning("Входной датасет пуст. Расчет невозможен.")
                 return self._create_error_response('Входной датасет пуст')
 
-            # Этап 2: Проверяем наличие начальной и конечной инвентаризации
-            log.info("Этап 1/4: Проверка наличия инвентаризационных данных...")
+            # Этап 2: Валидация конфигурации
+            log.info("Этап 2/8: Валидация конфигурации...")
+            # Здесь можно добавить валидацию конфигурации если необходимо
+            
+            # Этап 3: Инициализация обработки данных
+            log.info("Этап 3/8: Инициализация обработки данных...")
+            # Здесь можно добавить инициализацию если необходимо
+            
+            # Этап 4: Проверяем наличие начальной и конечной инвентаризации
+            log.info("Этап 4/8: Проверка наличия инвентаризационных данных...")
             processed_dataset = self._check_inventory_availability(dataset, source_filename)
             
-            # Этап 3: Расчет коэффициентов
-            log.info(f"Этап 2/4: Расчет коэффициентов для {len(processed_dataset)} позиций...")
+            # Этап 5: Последовательная обработка данных
+            log.info(f"Этап 5/8: Расчет коэффициентов для {len(processed_dataset)} позиций...")
             processing_results = self.data_processor.calculate_coefficients(processed_dataset, self.surplus_rates)
             coefficients_results = processing_results['coefficients']
             error_results = processing_results['errors']
             
-            # Этап 4: Сохраняем результаты в базу данных (если интеграция доступна)
+            # Этап 6: Валидация результатов
+            log.info("Этап 6/8: Валидация результатов...")
+            # Здесь можно добавить валидацию результатов если необходимо
+            
+            # Этап 7: Сохраняем результаты в базу данных (если интеграция доступна)
             if DATABASE_INTEGRATION_AVAILABLE and self.config.get('enable_database', False):
-                log.info("Этап 3/4: Сохранение результатов в базу данных...")
+                log.info("Этап 7/8: Сохранение результатов в базу данных...")
                 try:
                     save_calculation_results(
                         source_filename=source_filename,
@@ -263,8 +276,8 @@ class ShrinkageSystem:
                         'Ошибка': error_msg
                     })
             
-            # Этап 5: Генерация отчетов и сводки
-            log.info("Этап 4/4: Генерация отчетов и сводки...")
+            # Этап 8: Генерация отчетов и сводки
+            log.info("Этап 8/8: Генерация отчетов и сводки...")
             try:
                 report_data = self.report_generator.generate(
                     coefficients_results, 
@@ -276,7 +289,7 @@ class ShrinkageSystem:
                 log.error(error_msg)
                 return self._create_error_response(error_msg)
             
-            # Этап 6: Генерация расширенных аналитических отчетов (если доступно)
+            # Генерация расширенных аналитических отчетов (если доступно)
             advanced_reports = {}
             if ADVANCED_ANALYTICS_AVAILABLE and self.config.get('enable_database', False):
                 log.info("Генерация расширенных аналитических отчетов...")

@@ -1,5 +1,5 @@
 {
-  "source_file": "исходные_данные\\sample_data.xlsx",
+  "source_file": "исходные_данные/sample_data.xlsx",
   "sheet_count": 1,
   "sheets": {
     "Sheet1": [

@@ -97,10 +97,31 @@ def main(page: ft.Page):
     progress_bar = ProgressBar(visible=False, color=Colors.BLUE_600)
     
     open_report_button = ElevatedButton(
-        "Открыть отчет",
+        "Открыть основной отчет",
         icon=Icons.VISIBILITY,
         visible=False,
-        on_click=lambda _: open_report(None)
+        on_click=lambda _: open_main_report(None)
+    )
+    
+    open_errors_report_button = ElevatedButton(
+        "Открыть отчет об ошибках",
+        icon=Icons.ERROR_OUTLINE,
+        visible=False,
+        on_click=lambda _: open_errors_report(None)
+    )
+    
+    open_no_inventory_report_button = ElevatedButton(
+        "Открыть отчет без инвентаризации",
+        icon=Icons.INVENTORY_2_OUTLINED,
+        visible=False,
+        on_click=lambda _: open_no_inventory_report(None)
+    )
+    
+    open_advanced_reports_button = ElevatedButton(
+        "Открыть расширенные отчеты",
+        icon=Icons.ANALYTICS_OUTLINED,
+        visible=False,
+        on_click=lambda _: show_advanced_reports_dialog(None)
     )
     
     open_folder_button = ElevatedButton(
@@ -124,15 +145,95 @@ def main(page: ft.Page):
         page.update()
 
     def open_report(e):
-        report_path = report_path_storage["path"]
+        open_main_report(e)
+    
+    def open_main_report(e):
+        report_path = report_path_storage.get("coefficients", "")
         if report_path and os.path.exists(report_path):
             try:
                 webbrowser.open(f"file://{os.path.abspath(report_path)}")
-                show_snackbar("Отчет открыт в браузере", Colors.GREEN_500)
+                show_snackbar("Основной отчет открыт в браузере", Colors.GREEN_500)
             except Exception as ex:
-                show_snackbar(f"Ошибка открытия отчета: {ex}", Colors.RED_500)
+                show_snackbar(f"Ошибка открытия основного отчета: {ex}", Colors.RED_500)
         else:
-            show_snackbar("Отчет не найден", Colors.ORANGE_500)
+            show_snackbar("Основной отчет не найден", Colors.ORANGE_500)
+    
+    def open_errors_report(e):
+        report_path = report_path_storage.get("errors", "")
+        if report_path and os.path.exists(report_path):
+            try:
+                webbrowser.open(f"file://{os.path.abspath(report_path)}")
+                show_snackbar("Отчет об ошибках открыт в браузере", Colors.GREEN_500)
+            except Exception as ex:
+                show_snackbar(f"Ошибка открытия отчета об ошибках: {ex}", Colors.RED_500)
+        else:
+            show_snackbar("Отчет об ошибках не найден", Colors.ORANGE_500)
+    
+    def open_no_inventory_report(e):
+        report_path = report_path_storage.get("no_inventory", "")
+        if report_path and os.path.exists(report_path):
+            try:
+                webbrowser.open(f"file://{os.path.abspath(report_path)}")
+                show_snackbar("Отчет по позициям без инвентаризации открыт в браузере", Colors.GREEN_500)
+            except Exception as ex:
+                show_snackbar(f"Ошибка открытия отчета по позициям без инвентаризации: {ex}", Colors.RED_500)
+        else:
+            show_snackbar("Отчет по позициям без инвентаризации не найден", Colors.ORANGE_500)
+    
+    def open_model_comparison_report(e):
+        report_path = report_path_storage.get("model_comparison", "")
+        if report_path and os.path.exists(report_path):
+            try:
+                webbrowser.open(f"file://{os.path.abspath(report_path)}")
+                show_snackbar("Отчет о сравнении моделей открыт в браузере", Colors.GREEN_500)
+            except Exception as ex:
+                show_snackbar(f"Ошибка открытия отчета о сравнении моделей: {ex}", Colors.RED_500)
+        else:
+            show_snackbar("Отчет о сравнении моделей не найден", Colors.ORANGE_500)
+    
+    def open_nomenclature_performance_report(e):
+        report_path = report_path_storage.get("nomenclature_performance", "")
+        if report_path and os.path.exists(report_path):
+            try:
+                webbrowser.open(f"file://{os.path.abspath(report_path)}")
+                show_snackbar("Отчет о производительности номенклатур открыт в браузере", Colors.GREEN_500)
+            except Exception as ex:
+                show_snackbar(f"Ошибка открытия отчета о производительности номенклатур: {ex}", Colors.RED_500)
+        else:
+            show_snackbar("Отчет о производительности номенклатур не найден", Colors.ORANGE_500)
+    
+    def show_advanced_reports_dialog(e):
+        """Show dialog with buttons for advanced reports"""
+        # Create buttons for advanced reports
+        model_comparison_button = ft.TextButton(
+            "Отчет о сравнении моделей", 
+            on_click=lambda _: open_model_comparison_report(None)
+        )
+        nomenclature_performance_button = ft.TextButton(
+            "Отчет о производительности номенклатур", 
+            on_click=lambda _: open_nomenclature_performance_report(None)
+        )
+        close_button = ft.TextButton("Закрыть", on_click=lambda e: setattr(page.dialog, 'open', False) or page.update())
+        
+        # Create dialog content
+        content = ft.Column([
+            ft.Text("Расширенные отчеты", size=20, weight=ft.FontWeight.BOLD),
+            ft.Divider(),
+            ft.Text("Выберите расширенный отчет для открытия:", size=14),
+            model_comparison_button,
+            nomenclature_performance_button,
+        ], spacing=10, width=400)
+        
+        # Create and show dialog
+        dialog = ft.AlertDialog(
+            title=ft.Text("Расширенные отчеты"),
+            content=content,
+            actions=[close_button],
+            actions_alignment=ft.MainAxisAlignment.END,
+        )
+        page.dialog = dialog
+        page.dialog.open = True
+        page.update()
 
     def open_results_folder(e):
         results_dir = "результаты"
@@ -252,20 +353,63 @@ def main(page: ft.Page):
             )
             
             if results.get('status') == 'success':
-                report_path = results.get('reports', {}).get('coefficients', '')
-                report_path_storage["path"] = report_path
-                status_text.value = f"Готово! Отчет сохранен в: {report_path}"
+                # Store all report paths
+                reports = results.get('reports', {})
+                report_path_storage["coefficients"] = reports.get('coefficients', '')
+                report_path_storage["errors"] = reports.get('errors', '')
+                report_path_storage["no_inventory"] = reports.get('no_inventory', '')
+                
+                # Also store advanced reports if available
+                advanced_reports = results.get('advanced_reports', {})
+                report_path_storage["model_comparison"] = advanced_reports.get('model_comparison', '')
+                report_path_storage["nomenclature_performance"] = advanced_reports.get('nomenclature_performance', '')
+                
+                # Show success message with main report path
+                main_report_path = report_path_storage["coefficients"]
+                status_text.value = f"Готово! Основной отчет сохранен в: {main_report_path}"
                 status_text.color = Colors.GREEN_700
                 status_text.weight = ft.FontWeight.BOLD
                 log.success("Расчет успешно завершен.")
                 show_snackbar("Расчет успешно завершен!", Colors.GREEN_500)
                 
+                # Show all report buttons
                 open_report_button.visible = True
                 open_folder_button.visible = True
-                if report_path and os.path.exists(report_path):
+                
+                # Show additional report buttons if reports exist
+                if reports.get('errors', '') and os.path.exists(reports.get('errors', '')):
+                    open_errors_report_button.visible = True
+                else:
+                    open_errors_report_button.visible = False
+                    
+                if reports.get('no_inventory', '') and os.path.exists(reports.get('no_inventory', '')):
+                    open_no_inventory_report_button.visible = True
+                else:
+                    open_no_inventory_report_button.visible = False
+                    
+                # Show advanced reports button if advanced reports exist
+                if (advanced_reports.get('model_comparison', '') and os.path.exists(advanced_reports.get('model_comparison', ''))) or \\
+                   (advanced_reports.get('nomenclature_performance', '') and os.path.exists(advanced_reports.get('nomenclature_performance', ''))):
+                    open_advanced_reports_button.visible = True
+                else:
+                    open_advanced_reports_button.visible = False
+                
+                # Enable report buttons if reports exist
+                if main_report_path and os.path.exists(main_report_path):
                     open_report_button.disabled = False
                 else:
                     open_report_button.disabled = True
+                
+                # Auto-open reports if setting is enabled
+                if settings_manager.get_setting('auto_open_reports', True):
+                    # Open main report automatically
+                    if main_report_path and os.path.exists(main_report_path):
+                        try:
+                            webbrowser.open(f"file://{os.path.abspath(main_report_path)}")
+                            show_snackbar("Основной отчет открыт автоматически", Colors.BLUE_500)
+                        except Exception as ex:
+                            log.error(f"Ошибка автоматического открытия основного отчета: {ex}")
+                            show_snackbar("Не удалось открыть основной отчет автоматически", Colors.ORANGE_500)
             else:
                 error_msg = results.get('message', 'Неизвестная ошибка')
                 status_text.value = f"Ошибка расчета: {error_msg}"
@@ -1020,7 +1164,7 @@ def main(page: ft.Page):
                     run_button,
                     progress_bar,
                     status_text,
-                    Row([open_report_button, open_folder_button]),
+                    Row([open_report_button, open_errors_report_button, open_no_inventory_report_button, open_advanced_reports_button, open_folder_button]),
                 ], spacing=10),
                 padding=20,
             ),

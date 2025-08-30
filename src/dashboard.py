@@ -422,7 +422,18 @@ def load_data(file_path):
 # --- Выбор файла --- 
 output_dir = "результаты"
 if os.path.exists(output_dir):
-    report_files = [f for f in os.listdir(output_dir) if f.endswith('.html') and f.startswith('коэффициенты')]
+    # Get all report files
+    all_report_files = [f for f in os.listdir(output_dir) if f.endswith('.html')]
+    
+    # Categorize reports
+    coefficient_reports = [f for f in all_report_files if f.startswith('коэффициенты')]
+    error_reports = [f for f in all_report_files if f.startswith('ошибки')]
+    no_inventory_reports = [f for f in all_report_files if f.startswith('позиции_без_инвентаризации')]
+    model_comparison_reports = [f for f in all_report_files if f.startswith('сравнение_моделей')]
+    nomenclature_performance_reports = [f for f in all_report_files if f.startswith('производительность_номенклатур')]
+    
+    # Use coefficient reports as the main reports for selection
+    report_files = coefficient_reports
     
     if report_files:
         # Улучшенный выбор файла с описанием
@@ -452,8 +463,10 @@ if os.path.exists(output_dir):
         st.markdown('<div class="report-buttons">', unsafe_allow_html=True)
         st.markdown("<h3>🚀 Быстрый доступ к отчетам</h3><p style='margin-top: 10px; opacity: 0.8;'>Откройте отчеты одним кликом для детального анализа</p>", unsafe_allow_html=True)
         
-        col1, col2 = st.columns(2)
-        with col1:
+        # Create columns for report buttons
+        cols = st.columns(3)
+        
+        with cols[0]:
             if st.button("📖 Открыть выбранный отчет", use_container_width=True):
                 try:
                     os.startfile(os.path.abspath(report_path))  # Для Windows
@@ -461,13 +474,93 @@ if os.path.exists(output_dir):
                 except Exception as e:
                     st.error(f"Не удалось открыть отчет: {e}")
         
-        with col2:
+        with cols[1]:
             if st.button("📁 Открыть папку с отчетами", use_container_width=True):
                 try:
                     os.startfile(os.path.abspath(output_dir))  # Для Windows
                     st.success("Папка с отчетами открыта")
                 except Exception as e:
                     st.error(f"Не удалось открыть папку: {e}")
+        
+        with cols[2]:
+            if st.button("📋 Все отчеты", use_container_width=True):
+                st.session_state.show_all_reports = not st.session_state.get("show_all_reports", False)
+        
+        # Show all reports if button is clicked
+        if st.session_state.get("show_all_reports", False):
+            st.markdown("---")
+            st.subheader("Все доступные отчеты")
+            
+            # Coefficient reports
+            if coefficient_reports:
+                st.markdown("**📊 Отчеты по коэффициентам усушки:**")
+                for report in coefficient_reports[:5]:  # Show first 5
+                    report_path_full = os.path.join(output_dir, report)
+                    if st.button(f"📊 {report}", key=f"coeff_{report}"):
+                        try:
+                            os.startfile(os.path.abspath(report_path_full))
+                            st.success(f"Отчет {report} открыт в браузере")
+                        except Exception as e:
+                            st.error(f"Не удалось открыть отчет: {e}")
+                if len(coefficient_reports) > 5:
+                    st.caption(f"... и еще {len(coefficient_reports) - 5} отчетов")
+            
+            # Error reports
+            if error_reports:
+                st.markdown("**⚠️ Отчеты об ошибках:**")
+                for report in error_reports[:5]:  # Show first 5
+                    report_path_full = os.path.join(output_dir, report)
+                    if st.button(f"⚠️ {report}", key=f"error_{report}"):
+                        try:
+                            os.startfile(os.path.abspath(report_path_full))
+                            st.success(f"Отчет {report} открыт в браузере")
+                        except Exception as e:
+                            st.error(f"Не удалось открыть отчет: {e}")
+                if len(error_reports) > 5:
+                    st.caption(f"... и еще {len(error_reports) - 5} отчетов")
+            
+            # No inventory reports
+            if no_inventory_reports:
+                st.markdown("**📦 Отчеты по позициям без инвентаризации:**")
+                for report in no_inventory_reports[:5]:  # Show first 5
+                    report_path_full = os.path.join(output_dir, report)
+                    if st.button(f"📦 {report}", key=f"no_inv_{report}"):
+                        try:
+                            os.startfile(os.path.abspath(report_path_full))
+                            st.success(f"Отчет {report} открыт в браузере")
+                        except Exception as e:
+                            st.error(f"Не удалось открыть отчет: {e}")
+                if len(no_inventory_reports) > 5:
+                    st.caption(f"... и еще {len(no_inventory_reports) - 5} отчетов")
+            
+            # Model comparison reports
+            if model_comparison_reports:
+                st.markdown("**🔬 Отчеты о сравнении моделей:**")
+                for report in model_comparison_reports[:5]:  # Show first 5
+                    report_path_full = os.path.join(output_dir, report)
+                    if st.button(f"🔬 {report}", key=f"model_{report}"):
+                        try:
+                            os.startfile(os.path.abspath(report_path_full))
+                            st.success(f"Отчет {report} открыт в браузере")
+                        except Exception as e:
+                            st.error(f"Не удалось открыть отчет: {e}")
+                if len(model_comparison_reports) > 5:
+                    st.caption(f"... и еще {len(model_comparison_reports) - 5} отчетов")
+            
+            # Nomenclature performance reports
+            if nomenclature_performance_reports:
+                st.markdown("**📈 Отчеты о производительности номенклатур:**")
+                for report in nomenclature_performance_reports[:5]:  # Show first 5
+                    report_path_full = os.path.join(output_dir, report)
+                    if st.button(f"📈 {report}", key=f"perf_{report}"):
+                        try:
+                            os.startfile(os.path.abspath(report_path_full))
+                            st.success(f"Отчет {report} открыт в браузере")
+                        except Exception as e:
+                            st.error(f"Не удалось открыть отчет: {e}")
+                if len(nomenclature_performance_reports) > 5:
+                    st.caption(f"... и еще {len(nomenclature_performance_reports) - 5} отчетов")
+        
         st.markdown('</div>', unsafe_allow_html=True)
         
         # Загрузка данных

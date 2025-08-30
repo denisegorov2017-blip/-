@@ -60,6 +60,10 @@ class ReportGenerator:
         Returns:
             Dict[str, Any]: Словарь, содержащий пути к отчетам и сводную статистику.
         """
+        log.info("Начало генерации отчетов и сводной статистики...")
+        
+        # Этап 1: Валидация конфигурации
+        log.info("Этап 1/5: Валидация конфигурации...")
         if preliminary is None:
             preliminary = []
             
@@ -68,16 +72,21 @@ class ReportGenerator:
             
         output_dir = self.config.get('output_dir', 'результаты')
         
-        # Этап 1: Определяем целевую директорию
+        # Этап 2: Настройка директории и файлов
+        log.info("Этап 2/5: Настройка директории и файлов...")
         is_test_data = self._is_test_data(source_filename)
         target_dir = self.test_data_manager.test_subdir if is_test_data else output_dir
         
-        # Этап 2: Генерируем отчеты
-        log.info("Генерация HTML отчетов...")
+        # Этап 3: Последовательная генерация отчетов:
+        log.info("Этап 3/5: Последовательная генерация отчетов...")
         reports = self._generate_reports_sequentially(coefficients, preliminary, errors, target_dir, source_filename)
         
-        # Этап 3: Генерируем сводную статистику
-        log.info("Генерация сводной статистики...")
+        # Этап 4: Генерация индекса
+        log.info("Этап 4/5: Генерация индекса...")
+        # Здесь можно добавить генерацию индекса если необходимо
+        
+        # Этап 5: Финальная валидация
+        log.info("Этап 5/5: Финальная валидация...")
         summary = self._generate_summary_sequentially(coefficients, preliminary, errors)
         
         return {
@@ -98,6 +107,9 @@ class ReportGenerator:
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
             reports = {}
             
+            # Этап 1: Отчеты по коэффициентам усушки
+            log.info("Этап 1/5: Генерация отчетов по коэффициентам усушки...")
+            
             # Разделяем коэффициенты на обычные и без инвентаризации
             regular_coefficients = []
             no_inventory_coefficients = []
@@ -115,12 +127,8 @@ class ReportGenerator:
                 reports['coefficients'] = coefficients_path
                 log.info(f"Отчет по коэффициентам сохранен: {coefficients_path}")
             
-            # Генерируем отчет по позициям без инвентаризации
-            if no_inventory_coefficients:
-                no_inventory_path = os.path.join(output_dir, f"позиции_без_инвентаризации_{base_name}_{timestamp}.html")
-                self.reporter.generate_coefficients_report(no_inventory_coefficients, no_inventory_path, "Позиции без инвентаризации")
-                reports['no_inventory'] = no_inventory_path
-                log.info(f"Отчет по позициям без инвентаризации сохранен: {no_inventory_path}")
+            # Этап 2: Отчеты об ошибках расчета
+            log.info("Этап 2/5: Генерация отчетов об ошибках расчета...")
             
             # Генерируем отчет об ошибках, если есть
             if errors:
@@ -129,12 +137,28 @@ class ReportGenerator:
                 reports['errors'] = errors_path
                 log.info(f"Отчет об ошибках сохранен: {errors_path}")
                 
+            # Этап 3: Отчеты по позициям без инвентаризации
+            log.info("Этап 3/5: Генерация отчетов по позициям без инвентаризации...")
+            
+            # Генерируем отчет по позициям без инвентаризации
+            if no_inventory_coefficients:
+                no_inventory_path = os.path.join(output_dir, f"позиции_без_инвентаризации_{base_name}_{timestamp}.html")
+                self.reporter.generate_coefficients_report(no_inventory_coefficients, no_inventory_path, "Позиции без инвентаризации")
+                reports['no_inventory'] = no_inventory_path
+                log.info(f"Отчет по позициям без инвентаризации сохранен: {no_inventory_path}")
+            
+            # Этап 4: Предварительные расчеты (при необходимости)
+            log.info("Этап 4/5: Генерация предварительных расчетов...")
+            
             # Логика для предварительных отчетов, если она будет возвращена
             # if preliminary:
             #     preliminary_path = os.path.join(output_dir, f"предварительный_расчет_{base_name}_{timestamp}.html")
             #     # self.reporter.generate_preliminary_report(preliminary, preliminary_path, "Предварительный расчет усушки")
             #     reports['preliminary'] = preliminary_path
             #     log.info(f"Предварительный отчет сохранен: {preliminary_path}")
+            
+            # Этап 5: Сводные отчеты
+            log.info("Этап 5/5: Генерация сводных отчетов...")
                 
             return reports
         except Exception as e:
