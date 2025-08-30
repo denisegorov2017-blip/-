@@ -44,6 +44,10 @@ class AIChat:
         self._load_settings()
         
         self.chat_history_file = self.config.get('chat_history_file', 'результаты/ai_chat_history.json')
+        self.feedback_file = self.config.get('feedback_file', 'результаты/user_feedback.json')
+        self.ratings_file = self.config.get('ratings_file', 'результаты/chat_ratings.json')
+        self.knowledge_base_file = self.config.get('knowledge_base_file', 'результаты/ai_knowledge_base.json')
+        self.training_data_file = self.config.get('training_data_file', 'результаты/ai_training_data.json')
         
         # Внешний ИИ настройки (для расчетов)
         self.enable_external_ai_calculations = self.config.get('enable_external_ai_calculations', False)
@@ -94,6 +98,16 @@ class AIChat:
         # Загружаем историю чата
         self.chat_history = self._load_chat_history()
         
+        # Загружаем обратную связь и рейтинги
+        self.user_feedback = self._load_user_feedback()
+        self.chat_ratings = self._load_chat_ratings()
+        
+        # Загружаем базу знаний
+        self.knowledge_base = self._load_knowledge_base()
+        
+        # Загружаем данные для обучения
+        self.training_data = self._load_training_data()
+        
         log.info("AIChat инициализирован")
     
     def _load_settings(self):
@@ -138,6 +152,131 @@ class AIChat:
         except Exception as e:
             log.error(f"Ошибка при сохранении истории чата: {e}")
     
+    def _load_user_feedback(self) -> List[Dict[str, Any]]:
+        """
+        Загружает пользовательскую обратную связь из файла.
+        
+        Returns:
+            List[Dict[str, Any]]: Обратная связь пользователей.
+        """
+        try:
+            if os.path.exists(self.feedback_file):
+                with open(self.feedback_file, 'r', encoding='utf-8') as f:
+                    return json.load(f)
+            else:
+                # Создаем директорию если она не существует
+                os.makedirs(os.path.dirname(self.feedback_file), exist_ok=True)
+                return []
+        except Exception as e:
+            log.error(f"Ошибка при загрузке обратной связи: {e}")
+            return []
+    
+    def _save_user_feedback(self):
+        """
+        Сохраняет пользовательскую обратную связь в файл.
+        """
+        try:
+            with open(self.feedback_file, 'w', encoding='utf-8') as f:
+                json.dump(self.user_feedback, f, ensure_ascii=False, indent=2)
+        except Exception as e:
+            log.error(f"Ошибка при сохранении обратной связи: {e}")
+    
+    def _load_chat_ratings(self) -> Dict[str, Any]:
+        """
+        Загружает рейтинги чатов из файла.
+        
+        Returns:
+            Dict[str, Any]: Рейтинги чатов.
+        """
+        try:
+            if os.path.exists(self.ratings_file):
+                with open(self.ratings_file, 'r', encoding='utf-8') as f:
+                    return json.load(f)
+            else:
+                # Создаем директорию если она не существует
+                os.makedirs(os.path.dirname(self.ratings_file), exist_ok=True)
+                return {}
+        except Exception as e:
+            log.error(f"Ошибка при загрузке рейтингов чатов: {e}")
+            return {}
+    
+    def _save_chat_ratings(self):
+        """
+        Сохраняет рейтинги чатов в файл.
+        """
+        try:
+            with open(self.ratings_file, 'w', encoding='utf-8') as f:
+                json.dump(self.chat_ratings, f, ensure_ascii=False, indent=2)
+        except Exception as e:
+            log.error(f"Ошибка при сохранении рейтингов чатов: {e}")
+    
+    def _load_knowledge_base(self) -> Dict[str, Any]:
+        """
+        Загружает базу знаний из файла.
+        
+        Returns:
+            Dict[str, Any]: База знаний.
+        """
+        try:
+            if os.path.exists(self.knowledge_base_file):
+                with open(self.knowledge_base_file, 'r', encoding='utf-8') as f:
+                    return json.load(f)
+            else:
+                # Создаем директорию если она не существует
+                os.makedirs(os.path.dirname(self.knowledge_base_file), exist_ok=True)
+                # Возвращаем базовую структуру базы знаний
+                return {
+                    "responses": {},
+                    "patterns": {},
+                    "faq": {}
+                }
+        except Exception as e:
+            log.error(f"Ошибка при загрузке базы знаний: {e}")
+            return {
+                "responses": {},
+                "patterns": {},
+                "faq": {}
+            }
+    
+    def _save_knowledge_base(self):
+        """
+        Сохраняет базу знаний в файл.
+        """
+        try:
+            with open(self.knowledge_base_file, 'w', encoding='utf-8') as f:
+                json.dump(self.knowledge_base, f, ensure_ascii=False, indent=2)
+        except Exception as e:
+            log.error(f"Ошибка при сохранении базы знаний: {e}")
+    
+    def _load_training_data(self) -> List[Dict[str, Any]]:
+        """
+        Загружает данные для обучения из файла.
+        
+        Returns:
+            List[Dict[str, Any]]: Данные для обучения.
+        """
+        try:
+            if os.path.exists(self.training_data_file):
+                with open(self.training_data_file, 'r', encoding='utf-8') as f:
+                    return json.load(f)
+            else:
+                # Создаем директорию если она не существует
+                os.makedirs(os.path.dirname(self.training_data_file), exist_ok=True)
+                return []
+        except Exception as e:
+            log.error(f"Ошибка при загрузке данных для обучения: {e}")
+            return []
+    
+    def _save_training_data(self):
+        """
+        Сохраняет данные для обучения в файл.
+        """
+        try:
+            with open(self.training_data_file, 'w', encoding='utf-8') as f:
+                json.dump(self.training_data, f, ensure_ascii=False, indent=2)
+        except Exception as e:
+            log.error(f"Ошибка при сохранении данных для обучения: {e}")
+    
     def add_message(self, role: str, content: str):
         """
         Добавляет сообщение в историю чата.
@@ -169,6 +308,38 @@ class AIChat:
         """
         self.chat_history = []
         self._save_chat_history()
+    
+    def add_user_feedback(self, message_id: str, feedback: str):
+        """
+        Добавляет обратную связь пользователя.
+        
+        Args:
+            message_id (str): ID сообщения.
+            feedback (str): Обратная связь пользователя.
+        """
+        feedback_entry = {
+            "message_id": message_id,
+            "feedback": feedback,
+            "timestamp": datetime.now().isoformat()
+        }
+        self.user_feedback.append(feedback_entry)
+        self._save_user_feedback()
+    
+    def add_chat_rating(self, chat_id: str, rating: int, comment: str = ""):
+        """
+        Добавляет рейтинг чата.
+        
+        Args:
+            chat_id (str): ID чата.
+            rating (int): Рейтинг (1-5).
+            comment (str): Комментарий к рейтингу.
+        """
+        self.chat_ratings[chat_id] = {
+            "rating": rating,
+            "comment": comment,
+            "timestamp": datetime.now().isoformat()
+        }
+        self._save_chat_ratings()
     
     def get_response(self, user_message: str) -> str:
         """
@@ -276,6 +447,351 @@ class AIChat:
         
         return response
     
+    def estimate_tokens(self, text: str) -> int:
+        """
+        Оценивает количество токенов в тексте.
+        Приблизительная оценка: 1 токен ≈ 4 символа для английского языка,
+        1 токен ≈ 1.5 символа для русского языка.
+        
+        Args:
+            text (str): Текст для оценки.
+            
+        Returns:
+            int: Приблизительное количество токенов.
+        """
+        # Проверяем, содержит ли текст кириллические символы
+        cyrillic_chars = sum(1 for char in text if '\u0400' <= char <= '\u04FF')
+        total_chars = len(text)
+        
+        # Если более 30% символов - кириллические, используем коэффициент для русского языка
+        if total_chars > 0 and (cyrillic_chars / total_chars) > 0.3:
+            # Для русского языка: 1 токен ≈ 1.5 символа
+            return int(total_chars / 1.5)
+        else:
+            # Для английского языка: 1 токен ≈ 4 символа
+            return int(total_chars / 4)
+    
+    def estimate_cost(self, model: str, prompt_tokens: int, completion_tokens: int) -> float:
+        """
+        Оценивает стоимость запроса к ИИ на основе количества токенов.
+        
+        Args:
+            model (str): Модель ИИ.
+            prompt_tokens (int): Количество токенов в запросе.
+            completion_tokens (int): Количество токенов в ответе.
+            
+        Returns:
+            float: Приблизительная стоимость в долларах США.
+        """
+        # Цены в долларах США за 1000 токенов (приблизительные значения)
+        pricing = {
+            # OpenAI модели
+            'gpt-3.5-turbo': {'prompt': 0.0015, 'completion': 0.002},
+            'gpt-4': {'prompt': 0.03, 'completion': 0.06},
+            'gpt-4-turbo': {'prompt': 0.01, 'completion': 0.03},
+            
+            # Anthropic модели
+            'claude-3-haiku': {'prompt': 0.00025, 'completion': 0.00125},
+            'claude-3-sonnet': {'prompt': 0.003, 'completion': 0.015},
+            'claude-3-opus': {'prompt': 0.015, 'completion': 0.075},
+            
+            # OpenRouter модели (примерные цены)
+            'openai/gpt-3.5-turbo': {'prompt': 0.0015, 'completion': 0.002},
+            'openai/gpt-4': {'prompt': 0.03, 'completion': 0.06},
+            'anthropic/claude-3-sonnet': {'prompt': 0.003, 'completion': 0.015},
+            
+            # По умолчанию для неизвестных моделей
+            'default': {'prompt': 0.002, 'completion': 0.004}
+        }
+        
+        # Получаем цены для модели или используем значения по умолчанию
+        model_pricing = pricing.get(model, pricing['default'])
+        
+        # Рассчитываем стоимость
+        prompt_cost = (prompt_tokens / 1000) * model_pricing['prompt']
+        completion_cost = (completion_tokens / 1000) * model_pricing['completion']
+        
+        return prompt_cost + completion_cost
+    
+    def check_cost_limits(self, estimated_cost: float) -> bool:
+        """
+        Проверяет, не превышает ли оценочная стоимость установленные лимиты.
+        
+        Args:
+            estimated_cost (float): Оценочная стоимость запроса.
+            
+        Returns:
+            bool: True если стоимость в пределах лимитов, False если превышает.
+        """
+        # Получаем лимит из конфигурации (по умолчанию 0.1 USD)
+        cost_limit = self.config.get('ai_cost_limit', 0.1)
+        
+        if estimated_cost > cost_limit:
+            log.warning(f"Оценочная стоимость запроса ({estimated_cost:.4f} USD) превышает лимит ({cost_limit} USD)")
+            return False
+        
+        return True
+    
+    def analyze_user_feedback(self):
+        """
+        Анализирует обратную связь пользователей для улучшения качества ответов.
+        """
+        if not self.user_feedback:
+            return
+        
+        # Анализируем обратную связь
+        feedback_analysis = {
+            "positive": 0,
+            "negative": 0,
+            "neutral": 0,
+            "common_themes": {}
+        }
+        
+        for feedback in self.user_feedback:
+            feedback_text = feedback.get("feedback", "").lower()
+            # Простой анализ тональности на основе ключевых слов
+            if any(word in feedback_text for word in ["хорошо", "отлично", "спасибо", "полезно", "понятно"]):
+                feedback_analysis["positive"] += 1
+            elif any(word in feedback_text for word in ["плохо", "неправильно", "ошибка", "непонятно", "неудобно"]):
+                feedback_analysis["negative"] += 1
+            else:
+                feedback_analysis["neutral"] += 1
+            
+            # Поиск общих тем в обратной связи
+            themes = ["расчет", "данные", "отчет", "интерфейс", "ошибка", "помощь"]
+            for theme in themes:
+                if theme in feedback_text:
+                    if theme not in feedback_analysis["common_themes"]:
+                        feedback_analysis["common_themes"][theme] = 0
+                    feedback_analysis["common_themes"][theme] += 1
+        
+        log.info(f"Анализ обратной связи: {feedback_analysis}")
+        return feedback_analysis
+    
+    def train_on_chat_history(self):
+        """
+        Обучает встроенный ИИ на истории чатов на основе рейтингов пользователей.
+        """
+        if not self.chat_ratings or not self.chat_history:
+            return
+        
+        # Собираем данные для обучения
+        training_examples = []
+        
+        # Проходим по рейтингам чатов
+        for chat_id, rating_data in self.chat_ratings.items():
+            rating = rating_data.get("rating", 0)
+            # Используем только высокие рейтинги (4-5 звезд) для обучения
+            if rating >= 4:
+                # Находим соответствующие сообщения в истории чата
+                chat_messages = []
+                for message in self.chat_history:
+                    # В реальной реализации здесь должна быть логика сопоставления
+                    # Для упрощения берем последние сообщения
+                    chat_messages.append(message)
+                
+                # Создаем обучающий пример
+                if len(chat_messages) >= 2:
+                    # Предпоследнее сообщение - запрос пользователя
+                    user_message = chat_messages[-2]["content"] if chat_messages[-2]["role"] == "user" else ""
+                    # Последнее сообщение - ответ ИИ
+                    ai_response = chat_messages[-1]["content"] if chat_messages[-1]["role"] == "assistant" else ""
+                    
+                    if user_message and ai_response:
+                        training_examples.append({
+                            "input": user_message,
+                            "output": ai_response,
+                            "rating": rating
+                        })
+        
+        # Обновляем базу знаний на основе положительных примеров
+        if training_examples:
+            self.update_knowledge_base(training_examples)
+    
+    def update_knowledge_base(self, training_examples: List[Dict[str, Any]]):
+        """
+        Обновляет базу знаний на основе обучающих примеров.
+        
+        Args:
+            training_examples (List[Dict[str, Any]]): Список обучающих примеров.
+        """
+        # Добавляем примеры в данные для обучения
+        self.training_data.extend(training_examples)
+        self._save_training_data()
+        
+        # Обновляем базу знаний
+        for example in training_examples:
+            user_input = example["input"].lower()
+            ai_output = example["output"]
+            
+            # Извлекаем ключевые слова из запроса пользователя
+            keywords = self._extract_keywords(user_input)
+            
+            # Обновляем шаблоны ответов
+            for keyword in keywords:
+                if keyword not in self.knowledge_base["responses"]:
+                    self.knowledge_base["responses"][keyword] = []
+                # Добавляем ответ, если его еще нет
+                if ai_output not in self.knowledge_base["responses"][keyword]:
+                    self.knowledge_base["responses"][keyword].append(ai_output)
+        
+        # Сохраняем обновленную базу знаний
+        self._save_knowledge_base()
+        
+        log.info(f"База знаний обновлена на основе {len(training_examples)} примеров")
+    
+    def _extract_keywords(self, text: str) -> List[str]:
+        """
+        Извлекает ключевые слова из текста.
+        
+        Args:
+            text (str): Текст для анализа.
+            
+        Returns:
+            List[str]: Список ключевых слов.
+        """
+        # Простая реализация извлечения ключевых слов
+        # В реальной системе можно использовать более сложные методы NLP
+        import re
+        
+        # Удаляем знаки препинания и приводим к нижнему регистру
+        text = re.sub(r'[^\w\s]', '', text.lower())
+        
+        # Разбиваем на слова
+        words = text.split()
+        
+        # Фильтруем стоп-слова (упрощенный список)
+        stop_words = {"и", "в", "на", "с", "о", "к", "по", "из", "от", "для", "не", "же", "бы", "ли", "быть", "как", "что", "это", "который"}
+        keywords = [word for word in words if word not in stop_words and len(word) > 2]
+        
+        return keywords
+    
+    def reasoning_engine(self, user_message: str) -> Optional[str]:
+        """
+        Механизм рассуждения для решения сложных задач.
+        
+        Args:
+            user_message (str): Сообщение пользователя.
+            
+        Returns:
+            Optional[str]: Результат рассуждения или None, если не удалось обработать.
+        """
+        user_message_lower = user_message.lower()
+        
+        # Проверяем, является ли запрос сложной задачей, требующей рассуждения
+        if any(keyword in user_message_lower for keyword in ["как", "почему", "объясни", "посчитай", "рассчитай", "анализ"]):
+            # Простая логика рассуждения на основе шаблонов
+            if "расчет" in user_message_lower and ("коэффициент" in user_message_lower or "усушк" in user_message_lower):
+                return self._reason_about_shrinkage_calculation(user_message)
+            elif "инвентаризац" in user_message_lower and ("данны" in user_message_lower or "файл" in user_message_lower):
+                return self._reason_about_inventory_data(user_message)
+            elif "точност" in user_message_lower or "верификаци" in user_message_lower:
+                return self._reason_about_accuracy_verification(user_message)
+            elif "паттерн" in user_message_lower or "закономерн" in user_message_lower:
+                return self._reason_about_patterns(user_message)
+        
+        # Для простых запросов возвращаем None, чтобы использовать обычный механизм
+        return None
+    
+    def _reason_about_shrinkage_calculation(self, user_message: str) -> str:
+        """
+        Рассуждение о расчете коэффициентов усушки.
+        
+        Args:
+            user_message (str): Сообщение пользователя.
+            
+        Returns:
+            str: Результат рассуждения.
+        """
+        return """Для расчета коэффициентов усушки система использует следующий подход:
+        
+1. Сбор данных: Система анализирует исторические данные инвентаризации, включая начальные и конечные остатки, приход и расход.
+
+2. Формула расчета: Используется нелинейная модель усушки: S(t) = a*(1 - exp(-b*t)) + c*t
+   - a: максимальная усушка
+   - b: скорость достижения максимальной усушки
+   - c: линейная компонента
+   - t: период хранения в днях
+
+3. Адаптация: Система адаптирует коэффициенты на основе новых данных инвентаризации для повышения точности.
+
+4. Верификация: Результаты проверяются на точность с помощью обратного пересчета и сравнения с фактическими данными.
+
+Если у вас есть конкретные данные, я могу помочь вам понять, как они будут обработаны системой."""
+    
+    def _reason_about_inventory_data(self, user_message: str) -> str:
+        """
+        Рассуждение о данных инвентаризации.
+        
+        Args:
+            user_message (str): Сообщение пользователя.
+            
+        Returns:
+            str: Результат рассуждения.
+        """
+        return """Данные инвентаризации играют ключевую роль в работе системы:
+        
+1. Источник информации: Инвентаризации предоставляют фактические данные о наличии товара в разные периоды времени.
+
+2. Расчет недостач: Система сравнивает ожидаемые остатки (на основе прихода и расхода) с фактическими данными инвентаризации для определения недостач.
+
+3. Периоды хранения: Данные инвентаризации используются для определения периодов хранения товаров, что критически важно для расчета усушки.
+
+4. Адаптивное обучение: Система использует данные инвентаризации для самообучения и уточнения коэффициентов усушки.
+
+Для корректной работы система требует:
+- Номенклатуру товаров
+- Даты и значения начальных остатков
+- Даты и значения конечных остатков
+- Приход и расход между инвентаризациями"""
+    
+    def _reason_about_accuracy_verification(self, user_message: str) -> str:
+        """
+        Рассуждение о верификации точности.
+        
+        Args:
+            user_message (str): Сообщение пользователя.
+            
+        Returns:
+            str: Результат рассуждения.
+        """
+        return """Система включает многоуровневую верификацию точности расчетов:
+        
+1. Обратный пересчет: Система проверяет коэффициенты, выполняя обратный пересчет предварительной усушки по тем же коэффициентам.
+
+2. Сравнение с фактическими данными: Рассчитанные значения сравниваются с фактическими данными инвентаризации.
+
+3. Метрики точности: Система рассчитывает несколько метрик:
+   - R² (коэффициент детерминации)
+   - RMSE (среднеквадратическая ошибка)
+   - MAE (средняя абсолютная ошибка)
+
+4. Пороги качества: Результаты оцениваются по шкале от 0% до 100% точности.
+
+Эта верификация позволяет пользователям оценить надежность расчетов и принимать обоснованные решения."""
+    
+    def _reason_about_patterns(self, user_message: str) -> str:
+        """
+        Рассуждение о паттернах и закономерностях.
+        
+        Args:
+            user_message (str): Сообщение пользователя.
+            
+        Returns:
+            str: Результат рассуждения.
+        """
+        return """Анализ паттернов в данных усушки позволяет выявить скрытые закономерности:
+        
+1. Сезонные колебания: Некоторые товары могут иметь сезонные изменения в усушке.
+
+2. Зависимость от условий хранения: Температура, влажность и другие факторы могут влиять на усушку.
+
+3. Типы продукции: Разные категории товаров могут иметь различные паттерны усушки.
+
+4. Аномалии: Система может выявлять аномальные значения, которые требуют дополнительного внимания.
+
+Для глубокого анализа паттернов рекомендуется использовать специализированные ИИ-модели через внешние сервисы или локальные установки."""
+    
     def _generate_builtin_response(self, user_message: str) -> str:
         """
         Генерирует ответ на основе встроенного ИИ.
@@ -286,9 +802,29 @@ class AIChat:
         Returns:
             str: Ответ ИИ.
         """
-        # Простая реализация встроенного ИИ на основе ключевых слов
-        user_message_lower = user_message.lower()
+        # Применяем механизм рассуждения
+        reasoning_result = self.reasoning_engine(user_message)
+        if reasoning_result:
+            return reasoning_result
         
+        # Ищем ответ в базе знаний
+        user_message_lower = user_message.lower()
+        keywords = self._extract_keywords(user_message_lower)
+        
+        # Ищем совпадения по ключевым словам
+        best_responses = []
+        for keyword in keywords:
+            if keyword in self.knowledge_base["responses"]:
+                # Добавляем все ответы для этого ключевого слова
+                for response in self.knowledge_base["responses"][keyword]:
+                    best_responses.append(response)
+        
+        # Если нашли ответы в базе знаний, возвращаем случайный из них
+        if best_responses:
+            import random
+            return random.choice(best_responses)
+        
+        # Если нет совпадений, используем базовые правила
         if "привет" in user_message_lower or "здравствуй" in user_message_lower:
             return "Здравствуйте! Я встроенный ИИ-ассистент системы расчета коэффициентов усушки. Чем могу помочь?"
         
@@ -369,14 +905,19 @@ class AIChat:
             return "Внешний ИИ не настроен. Пожалуйста, настройте API ключ в конфигурации."
         
         try:
+            # Оцениваем количество токенов в запросе
+            prompt_tokens = self.estimate_tokens(user_message)
+            
             # Подготавливаем историю чата для отправки внешнему ИИ
             # Фильтруем только последние сообщения для контекста
             messages = []
             # Добавляем системное сообщение
+            system_message = "Вы - помощник по системе расчета коэффициентов усушки. Помогайте пользователям с вопросами о работе системы, подготовке данных и интерпретации результатов."
             messages.append({
                 "role": "system",
-                "content": "Вы - помощник по системе расчета коэффициентов усушки. Помогайте пользователям с вопросами о работе системы, подготовке данных и интерпретации результатов."
+                "content": system_message
             })
+            prompt_tokens += self.estimate_tokens(system_message)
             
             # Добавляем последние сообщения из истории (ограничиваем 10 последними сообщениями)
             recent_messages = self.chat_history[-10:] if len(self.chat_history) > 10 else self.chat_history
@@ -387,12 +928,22 @@ class AIChat:
                         "role": msg["role"],
                         "content": msg["content"]
                     })
+                    prompt_tokens += self.estimate_tokens(msg["content"])
             
             # Добавляем текущее сообщение пользователя
             messages.append({
                 "role": "user",
                 "content": user_message
             })
+            prompt_tokens += self.estimate_tokens(user_message)
+            
+            # Оцениваем стоимость запроса
+            estimated_completion_tokens = 200  # Приблизительная оценка длины ответа
+            estimated_cost = self.estimate_cost(self.external_ai_model, prompt_tokens, estimated_completion_tokens)
+            
+            # Проверяем лимиты стоимости
+            if not self.check_cost_limits(estimated_cost):
+                return f"Запрос отклонен: оценочная стоимость ({estimated_cost:.4f} USD) превышает установленный лимит. Пожалуйста, уточните ваш запрос или увеличьте лимит."
             
             # Подготавливаем заголовки для API запроса
             headers = {
@@ -449,19 +1000,33 @@ class AIChat:
             return "Внешний ИИ для расчетов не настроен. Пожалуйста, настройте API ключ в конфигурации."
         
         try:
+            # Оцениваем количество токенов в запросе
+            prompt_tokens = self.estimate_tokens(calculation_prompt)
+            
             # Подготавливаем сообщения для расчетов
             messages = []
             # Добавляем системное сообщение
+            system_message = "Вы - математический ассистент. Ваша задача - выполнять точные математические расчеты и предоставлять пошаговые объяснения."
             messages.append({
                 "role": "system",
-                "content": "Вы - математический ассистент. Ваша задача - выполнять точные математические расчеты и предоставлять пошаговые объяснения."
+                "content": system_message
             })
+            prompt_tokens += self.estimate_tokens(system_message)
             
             # Добавляем запрос для расчетов
             messages.append({
                 "role": "user",
                 "content": calculation_prompt
             })
+            prompt_tokens += self.estimate_tokens(calculation_prompt)
+            
+            # Оцениваем стоимость запроса
+            estimated_completion_tokens = 500  # Приблизительная оценка длины ответа для расчетов
+            estimated_cost = self.estimate_cost(self.external_ai_calculations_model, prompt_tokens, estimated_completion_tokens)
+            
+            # Проверяем лимиты стоимости
+            if not self.check_cost_limits(estimated_cost):
+                return f"Запрос отклонен: оценочная стоимость ({estimated_cost:.4f} USD) превышает установленный лимит. Пожалуйста, уточните ваш запрос или увеличьте лимит."
             
             # Подготавливаем заголовки для API запроса
             headers = {
@@ -518,19 +1083,33 @@ class AIChat:
             return "Внешний ИИ для анализа паттернов не настроен. Пожалуйста, настройте API ключ в конфигурации."
         
         try:
+            # Оцениваем количество токенов в запросе
+            prompt_tokens = self.estimate_tokens(pattern_prompt)
+            
             # Подготавливаем сообщения для анализа паттернов
             messages = []
             # Добавляем системное сообщение
+            system_message = "Вы - аналитик данных. Ваша задача - выявлять скрытые паттерны, закономерности и аномалии в данных."
             messages.append({
                 "role": "system",
-                "content": "Вы - аналитик данных. Ваша задача - выявлять скрытые паттерны, закономерности и аномалии в данных."
+                "content": system_message
             })
+            prompt_tokens += self.estimate_tokens(system_message)
             
             # Добавляем запрос для анализа паттернов
             messages.append({
                 "role": "user",
                 "content": pattern_prompt
             })
+            prompt_tokens += self.estimate_tokens(pattern_prompt)
+            
+            # Оцениваем стоимость запроса
+            estimated_completion_tokens = 500  # Приблизительная оценка длины ответа для анализа
+            estimated_cost = self.estimate_cost(self.external_ai_patterns_model, prompt_tokens, estimated_completion_tokens)
+            
+            # Проверяем лимиты стоимости
+            if not self.check_cost_limits(estimated_cost):
+                return f"Запрос отклонен: оценочная стоимость ({estimated_cost:.4f} USD) превышает установленный лимит. Пожалуйста, уточните ваш запрос или увеличьте лимит."
             
             # Подготавливаем заголовки для API запроса
             headers = {
@@ -573,6 +1152,115 @@ class AIChat:
             log.error(f"Неожиданная ошибка при получении ответа от внешнего ИИ для анализа паттернов: {e}")
             return f"Произошла ошибка при взаимодействии с внешним ИИ для анализа паттернов: {str(e)}"
     
+    def apply_token_saving_mode(self, text: str, saving_level: str = "medium") -> str:
+        """
+        Применяет режим экономии токенов к тексту.
+        
+        Args:
+            text (str): Исходный текст.
+            saving_level (str): Уровень экономии ("low", "medium", "high").
+            
+        Returns:
+            str: Текст с примененным режимом экономии токенов.
+        """
+        if saving_level == "low":
+            # Низкий уровень экономии - минимальные изменения
+            # Удаляем лишние пробелы и сокращаем повторяющиеся символы
+            import re
+            # Удаляем повторяющиеся пробелы
+            text = re.sub(r'\s+', ' ', text)
+            # Удаляем повторяющиеся символы (более 3 подряд)
+            text = re.sub(r'(.)\1{3,}', r'\1\1\1', text)
+            return text.strip()
+        
+        elif saving_level == "medium":
+            # Средний уровень экономии
+            import re
+            # Удаляем повторяющиеся пробелы
+            text = re.sub(r'\s+', ' ', text)
+            # Удаляем повторяющиеся символы (более 2 подряд)
+            text = re.sub(r'(.)\1{2,}', r'\1\1', text)
+            # Сокращаем длинные слова (более 15 символов) до первых 15 символов + "..."
+            words = text.split()
+            shortened_words = []
+            for word in words:
+                if len(word) > 15:
+                    shortened_words.append(word[:15] + "...")
+                else:
+                    shortened_words.append(word)
+            return " ".join(shortened_words).strip()
+        
+        elif saving_level == "high":
+            # Высокий уровень экономии
+            import re
+            # Удаляем повторяющиеся пробелы
+            text = re.sub(r'\s+', ' ', text)
+            # Удаляем повторяющиеся символы (более 1 подряд)
+            text = re.sub(r'(.)\1{1,}', r'\1', text)
+            # Сокращаем слова до первых 10 символов + "..."
+            words = text.split()
+            shortened_words = []
+            for word in words:
+                if len(word) > 10:
+                    shortened_words.append(word[:10] + ".")
+                else:
+                    shortened_words.append(word)
+            # Ограничиваем общую длину текста
+            result = " ".join(shortened_words).strip()
+            if len(result) > 500:
+                result = result[:500] + "..."
+            return result
+        
+        else:
+            # Без экономии
+            return text.strip()
+    
+    def adapt_to_model_specifics(self, model: str, prompt: str) -> str:
+        """
+        Адаптирует запрос под особенности конкретной модели ИИ.
+        
+        Args:
+            model (str): Модель ИИ.
+            prompt (str): Исходный запрос.
+            
+        Returns:
+            str: Адаптированный запрос.
+        """
+        # Применяем общие оптимизации
+        # Удаляем лишние пробелы
+        import re
+        prompt = re.sub(r'\s+', ' ', prompt).strip()
+        
+        # Адаптация под конкретные модели
+        if 'gpt' in model.lower():
+            # Для моделей GPT добавляем четкие инструкции в начало
+            if not prompt.startswith("Выполните") and not prompt.startswith("Проанализируйте") and not prompt.startswith("Объясните"):
+                prompt = "Пожалуйста, выполните следующий запрос: " + prompt
+            return prompt
+        
+        elif 'claude' in model.lower():
+            # Для моделей Claude добавляем структурированные инструкции
+            if "Human:" not in prompt and "Assistant:" not in prompt:
+                prompt = f"\n\nHuman: {prompt}\n\nAssistant:"
+            return prompt
+        
+        elif 'llama' in model.lower() or 'mistral' in model.lower():
+            # Для моделей Llama и Mistral добавляем инструкции в формате системного сообщения
+            # (это будет обрабатываться на уровне формирования сообщений)
+            return prompt
+        
+        elif 'qwen' in model.lower():
+            # Для моделей Qwen оптимизируем под русский язык
+            # Добавляем указание отвечать на русском языке, если в тексте есть кириллица
+            if any('\u0400' <= char <= '\u04FF' for char in prompt):
+                if "Ответ на русском" not in prompt and "на русском языке" not in prompt:
+                    prompt = "Ответ на русском языке: " + prompt
+            return prompt
+        
+        else:
+            # Для остальных моделей возвращаем как есть
+            return prompt
+    
     def get_local_ai_response(self, user_message: str) -> str:
         """
         Получает ответ от локального ИИ через LM Studio.
@@ -587,29 +1275,55 @@ class AIChat:
             return "Локальный ИИ не включен. Пожалуйста, включите локальный ИИ в настройках."
         
         try:
+            # Применяем режим экономии токенов, если включено
+            token_saving_mode = self.config.get('token_saving_mode', 'none')
+            if token_saving_mode != 'none':
+                user_message = self.apply_token_saving_mode(user_message, token_saving_mode)
+            
+            # Адаптируем запрос под особенности модели
+            user_message = self.adapt_to_model_specifics(self.local_ai_model, user_message)
+            
+            # Оцениваем количество токенов в запросе
+            prompt_tokens = self.estimate_tokens(user_message)
+            
             # Подготавливаем историю чата для отправки локальному ИИ
             messages = []
             # Добавляем системное сообщение
+            system_message = "Вы - помощник по системе расчета коэффициентов усушки. Помогайте пользователям с вопросами о работе системы, подготовке данных и интерпретации результатов. Отвечайте на русском языке."
             messages.append({
                 "role": "system",
-                "content": "Вы - помощник по системе расчета коэффициентов усушки. Помогайте пользователям с вопросами о работе системы, подготовке данных и интерпретации результатов. Отвечайте на русском языке."
+                "content": system_message
             })
+            prompt_tokens += self.estimate_tokens(system_message)
             
             # Добавляем последние сообщения из истории (ограничиваем 10 последними сообщениями)
             recent_messages = self.chat_history[-10:] if len(self.chat_history) > 10 else self.chat_history
             for msg in recent_messages:
                 # Пропускаем сообщения с ролью system, так как мы добавили свое
                 if msg["role"] != "system":
+                    content = msg["content"]
+                    # Применяем режим экономии токенов к истории тоже
+                    if token_saving_mode != 'none':
+                        content = self.apply_token_saving_mode(content, token_saving_mode)
+                    # Адаптируем под модель
+                    content = self.adapt_to_model_specifics(self.local_ai_model, content)
+                    
                     messages.append({
                         "role": msg["role"],
-                        "content": msg["content"]
+                        "content": content
                     })
+                    prompt_tokens += self.estimate_tokens(content)
             
             # Добавляем текущее сообщение пользователя
             messages.append({
                 "role": "user",
                 "content": user_message
             })
+            prompt_tokens += self.estimate_tokens(user_message)
+            
+            # Оцениваем стоимость запроса (для локальных моделей стоимость 0, но оцениваем для информации)
+            estimated_completion_tokens = 200  # Приблизительная оценка длины ответа
+            estimated_cost = self.estimate_cost(self.local_ai_model, prompt_tokens, estimated_completion_tokens)
             
             # Подготавливаем заголовки для API запроса
             headers = {
@@ -665,19 +1379,37 @@ class AIChat:
             return "Локальный ИИ для расчетов не включен. Пожалуйста, включите локальный ИИ в настройках."
         
         try:
+            # Применяем режим экономии токенов, если включено
+            token_saving_mode = self.config.get('token_saving_mode', 'none')
+            if token_saving_mode != 'none':
+                calculation_prompt = self.apply_token_saving_mode(calculation_prompt, token_saving_mode)
+            
+            # Адаптируем запрос под особенности модели
+            calculation_prompt = self.adapt_to_model_specifics(self.local_ai_calculations_model, calculation_prompt)
+            
+            # Оцениваем количество токенов в запросе
+            prompt_tokens = self.estimate_tokens(calculation_prompt)
+            
             # Подготавливаем сообщения для расчетов
             messages = []
             # Добавляем системное сообщение
+            system_message = "Вы - математический ассистент. Ваша задача - выполнять точные математические расчеты и предоставлять пошаговые объяснения. Отвечайте на русском языке."
             messages.append({
                 "role": "system",
-                "content": "Вы - математический ассистент. Ваша задача - выполнять точные математические расчеты и предоставлять пошаговые объяснения. Отвечайте на русском языке."
+                "content": system_message
             })
+            prompt_tokens += self.estimate_tokens(system_message)
             
             # Добавляем запрос для расчетов
             messages.append({
                 "role": "user",
                 "content": calculation_prompt
             })
+            prompt_tokens += self.estimate_tokens(calculation_prompt)
+            
+            # Оцениваем стоимость запроса (для локальных моделей стоимость 0, но оцениваем для информации)
+            estimated_completion_tokens = 500  # Приблизительная оценка длины ответа для расчетов
+            estimated_cost = self.estimate_cost(self.local_ai_calculations_model, prompt_tokens, estimated_completion_tokens)
             
             # Подготавливаем заголовки для API запроса
             headers = {
@@ -733,19 +1465,37 @@ class AIChat:
             return "Локальный ИИ для анализа паттернов не включен. Пожалуйста, включите локальный ИИ в настройках."
         
         try:
+            # Применяем режим экономии токенов, если включено
+            token_saving_mode = self.config.get('token_saving_mode', 'none')
+            if token_saving_mode != 'none':
+                pattern_prompt = self.apply_token_saving_mode(pattern_prompt, token_saving_mode)
+            
+            # Адаптируем запрос под особенности модели
+            pattern_prompt = self.adapt_to_model_specifics(self.local_ai_patterns_model, pattern_prompt)
+            
+            # Оцениваем количество токенов в запросе
+            prompt_tokens = self.estimate_tokens(pattern_prompt)
+            
             # Подготавливаем сообщения для анализа паттернов
             messages = []
             # Добавляем системное сообщение
+            system_message = "Вы - аналитик данных. Ваша задача - выявлять скрытые паттерны, закономерности и аномалии в данных. Отвечайте на русском языке."
             messages.append({
                 "role": "system",
-                "content": "Вы - аналитик данных. Ваша задача - выявлять скрытые паттерны, закономерности и аномалии в данных. Отвечайте на русском языке."
+                "content": system_message
             })
+            prompt_tokens += self.estimate_tokens(system_message)
             
             # Добавляем запрос для анализа паттернов
             messages.append({
                 "role": "user",
                 "content": pattern_prompt
             })
+            prompt_tokens += self.estimate_tokens(pattern_prompt)
+            
+            # Оцениваем стоимость запроса (для локальных моделей стоимость 0, но оцениваем для информации)
+            estimated_completion_tokens = 500  # Приблизительная оценка длины ответа для анализа
+            estimated_cost = self.estimate_cost(self.local_ai_patterns_model, prompt_tokens, estimated_completion_tokens)
             
             # Подготавливаем заголовки для API запроса
             headers = {
@@ -787,85 +1537,6 @@ class AIChat:
             log.error(f"Неожиданная ошибка при получении ответа от локального ИИ для анализа паттернов: {e}")
             return f"Произошла ошибка при взаимодействии с локальным ИИ для анализа паттернов: {str(e)}"
     
-    def get_openrouter_response(self, user_message: str) -> str:
-        """
-        Получает ответ от OpenRouter.
-        
-        Args:
-            user_message (str): Сообщение пользователя.
-            
-        Returns:
-            str: Ответ от OpenRouter.
-        """
-        if not self.enable_openrouter or not self.openrouter_api_key:
-            return "OpenRouter не настроен. Пожалуйста, настройте API ключ OpenRouter в конфигурации."
-        
-        try:
-            # Подготавливаем историю чата для отправки OpenRouter
-            messages = []
-            # Добавляем системное сообщение
-            messages.append({
-                "role": "system",
-                "content": "Вы - помощник по системе расчета коэффициентов усушки. Помогайте пользователям с вопросами о работе системы, подготовке данных и интерпретации результатов. Отвечайте на русском языке."
-            })
-            
-            # Добавляем последние сообщения из истории (ограничиваем 10 последними сообщениями)
-            recent_messages = self.chat_history[-10:] if len(self.chat_history) > 10 else self.chat_history
-            for msg in recent_messages:
-                # Пропускаем сообщения с ролью system, так как мы добавили свое
-                if msg["role"] != "system":
-                    messages.append({
-                        "role": msg["role"],
-                        "content": msg["content"]
-                    })
-            
-            # Добавляем текущее сообщение пользователя
-            messages.append({
-                "role": "user",
-                "content": user_message
-            })
-            
-            # Подготавливаем заголовки для API запроса
-            headers = {
-                "Authorization": f"Bearer {self.openrouter_api_key}",
-                "Content-Type": "application/json"
-            }
-            
-            # Подготавливаем тело запроса
-            payload = {
-                "model": self.openrouter_model,
-                "messages": messages,
-                "temperature": 0.7,
-                "max_tokens": 500
-            }
-            
-            # Отправляем запрос к OpenRouter API
-            response = requests.post(
-                "https://openrouter.ai/api/v1/chat/completions",
-                headers=headers,
-                json=payload,
-                timeout=30
-            )
-            
-            # Проверяем статус ответа
-            response.raise_for_status()
-            
-            # Извлекаем ответ из JSON
-            response_data = response.json()
-            ai_response = response_data["choices"][0]["message"]["content"].strip()
-            
-            return ai_response
-            
-        except requests.exceptions.RequestException as e:
-            log.error(f"Ошибка сети при запросе к OpenRouter: {e}")
-            return f"Ошибка сети при взаимодействии с OpenRouter: {str(e)}"
-        except KeyError as e:
-            log.error(f"Ошибка обработки ответа от OpenRouter: {e}")
-            return "Ошибка обработки ответа от OpenRouter. Проверьте настройки OpenRouter."
-        except Exception as e:
-            log.error(f"Неожиданная ошибка при получении ответа от OpenRouter: {e}")
-            return f"Произошла ошибка при взаимодействии с OpenRouter: {str(e)}"
-    
     def get_openrouter_calculations_response(self, calculation_prompt: str) -> str:
         """
         Получает ответ от OpenRouter для расчетов.
@@ -880,19 +1551,41 @@ class AIChat:
             return "OpenRouter для расчетов не настроен. Пожалуйста, настройте API ключ OpenRouter в конфигурации."
         
         try:
+            # Применяем режим экономии токенов, если включено
+            token_saving_mode = self.config.get('token_saving_mode', 'none')
+            if token_saving_mode != 'none':
+                calculation_prompt = self.apply_token_saving_mode(calculation_prompt, token_saving_mode)
+            
+            # Адаптируем запрос под особенности модели
+            calculation_prompt = self.adapt_to_model_specifics(self.openrouter_calculations_model, calculation_prompt)
+            
+            # Оцениваем количество токенов в запросе
+            prompt_tokens = self.estimate_tokens(calculation_prompt)
+            
             # Подготавливаем сообщения для расчетов
             messages = []
             # Добавляем системное сообщение
+            system_message = "Вы - математический ассистент. Ваша задача - выполнять точные математические расчеты и предоставлять пошаговые объяснения. Отвечайте на русском языке."
             messages.append({
                 "role": "system",
-                "content": "Вы - математический ассистент. Ваша задача - выполнять точные математические расчеты и предоставлять пошаговые объяснения. Отвечайте на русском языке."
+                "content": system_message
             })
+            prompt_tokens += self.estimate_tokens(system_message)
             
             # Добавляем запрос для расчетов
             messages.append({
                 "role": "user",
                 "content": calculation_prompt
             })
+            prompt_tokens += self.estimate_tokens(calculation_prompt)
+            
+            # Оцениваем стоимость запроса
+            estimated_completion_tokens = 500  # Приблизительная оценка длины ответа для расчетов
+            estimated_cost = self.estimate_cost(self.openrouter_calculations_model, prompt_tokens, estimated_completion_tokens)
+            
+            # Проверяем лимиты стоимости
+            if not self.check_cost_limits(estimated_cost):
+                return f"Запрос отклонен: оценочная стоимость ({estimated_cost:.4f} USD) превышает установленный лимит. Пожалуйста, уточните ваш запрос или увеличьте лимит."
             
             # Подготавливаем заголовки для API запроса
             headers = {
@@ -949,19 +1642,41 @@ class AIChat:
             return "OpenRouter для анализа паттернов не настроен. Пожалуйста, настройте API ключ OpenRouter в конфигурации."
         
         try:
+            # Применяем режим экономии токенов, если включено
+            token_saving_mode = self.config.get('token_saving_mode', 'none')
+            if token_saving_mode != 'none':
+                pattern_prompt = self.apply_token_saving_mode(pattern_prompt, token_saving_mode)
+            
+            # Адаптируем запрос под особенности модели
+            pattern_prompt = self.adapt_to_model_specifics(self.openrouter_patterns_model, pattern_prompt)
+            
+            # Оцениваем количество токенов в запросе
+            prompt_tokens = self.estimate_tokens(pattern_prompt)
+            
             # Подготавливаем сообщения для анализа паттернов
             messages = []
             # Добавляем системное сообщение
+            system_message = "Вы - аналитик данных. Ваша задача - выявлять скрытые паттерны, закономерности и аномалии в данных. Отвечайте на русском языке."
             messages.append({
                 "role": "system",
-                "content": "Вы - аналитик данных. Ваша задача - выявлять скрытые паттерны, закономерности и аномалии в данных. Отвечайте на русском языке."
+                "content": system_message
             })
+            prompt_tokens += self.estimate_tokens(system_message)
             
             # Добавляем запрос для анализа паттернов
             messages.append({
                 "role": "user",
                 "content": pattern_prompt
             })
+            prompt_tokens += self.estimate_tokens(pattern_prompt)
+            
+            # Оцениваем стоимость запроса
+            estimated_completion_tokens = 500  # Приблизительная оценка длины ответа для анализа
+            estimated_cost = self.estimate_cost(self.openrouter_patterns_model, prompt_tokens, estimated_completion_tokens)
+            
+            # Проверяем лимиты стоимости
+            if not self.check_cost_limits(estimated_cost):
+                return f"Запрос отклонен: оценочная стоимость ({estimated_cost:.4f} USD) превышает установленный лимит. Пожалуйста, уточните ваш запрос или увеличьте лимит."
             
             # Подготавливаем заголовки для API запроса
             headers = {
@@ -1004,43 +1719,114 @@ class AIChat:
             log.error(f"Неожиданная ошибка при получении ответа от OpenRouter для анализа паттернов: {e}")
             return f"Произошла ошибка при взаимодействии с OpenRouter для анализа паттернов: {str(e)}"
     
-    def get_openrouter_model_tooltip(self, model_id: str) -> str:
+    def get_openrouter_response(self, user_message: str) -> str:
         """
-        Получает текст всплывающей подсказки для модели OpenRouter.
+        Получает ответ от OpenRouter.
         
         Args:
-            model_id (str): ID модели
+            user_message (str): Сообщение пользователя.
             
         Returns:
-            str: Текст подсказки
+            str: Ответ от OpenRouter.
         """
-        return get_model_tooltip_text(model_id)
-    
-    def update_settings(self, settings: Dict[str, Any]):
-        """
-        Обновляет настройки чата.
+        if not self.enable_openrouter or not self.openrouter_api_key:
+            return "OpenRouter не настроен. Пожалуйста, настройте API ключ OpenRouter в конфигурации."
         
-        Args:
-            settings (Dict[str, Any]): Новые настройки.
-        """
-        self.config.update(settings)
-        
-        # Внешний ИИ настройки (для расчетов)
-        self.enable_external_ai_calculations = self.config.get('enable_external_ai_calculations', False)
-        self.external_ai_calculations_api_key = self.config.get('external_ai_calculations_api_key', '')
-        self.external_ai_calculations_model = self.config.get('external_ai_calculations_model', 'gpt-3.5-turbo')
-        self.external_ai_calculations_base_url = self.config.get('external_ai_calculations_base_url', 'https://api.openai.com/v1')
-        
-        # Внешний ИИ настройки (для анализа паттернов)
-        self.enable_external_ai_patterns = self.config.get('enable_external_ai_patterns', False)
-        self.external_ai_patterns_api_key = self.config.get('external_ai_patterns_api_key', '')
-        self.external_ai_patterns_model = self.config.get('external_ai_patterns_model', 'gpt-4')
-        self.external_ai_patterns_base_url = self.config.get('external_ai_patterns_base_url', 'https://api.openai.com/v1')
-        
-        # Локальный ИИ настройки (LM Studio) (для расчетов)
-        self.enable_local_ai_calculations = self.config.get('enable_local_ai_calculations', False)
-        self.local_ai_calculations_model = self.config.get('local_ai_calculations_model', 'gpt-3.5-turbo')
-        self.local_ai_calculations_base_url = self.config.get('local_ai_calculations_base_url', 'http://localhost:1234/v1')
+        try:
+            # Применяем режим экономии токенов, если включено
+            token_saving_mode = self.config.get('token_saving_mode', 'none')
+            if token_saving_mode != 'none':
+                user_message = self.apply_token_saving_mode(user_message, token_saving_mode)
+            
+            # Адаптируем запрос под особенности модели
+            user_message = self.adapt_to_model_specifics(self.openrouter_model, user_message)
+            
+            # Оцениваем количество токенов в запросе
+            prompt_tokens = self.estimate_tokens(user_message)
+            
+            # Подготавливаем историю чата для отправки OpenRouter
+            messages = []
+            # Добавляем системное сообщение
+            system_message = "Вы - помощник по системе расчета коэффициентов усушки. Помогайте пользователям с вопросами о работе системы, подготовке данных и интерпретации результатов. Отвечайте на русском языке."
+            messages.append({
+                "role": "system",
+                "content": system_message
+            })
+            prompt_tokens += self.estimate_tokens(system_message)
+            
+            # Добавляем последние сообщения из истории (ограничиваем 10 последними сообщениями)
+            recent_messages = self.chat_history[-10:] if len(self.chat_history) > 10 else self.chat_history
+            for msg in recent_messages:
+                # Пропускаем сообщения с ролью system, так как мы добавили свое
+                if msg["role"] != "system":
+                    content = msg["content"]
+                    # Применяем режим экономии токенов к истории тоже
+                    if token_saving_mode != 'none':
+                        content = self.apply_token_saving_mode(content, token_saving_mode)
+                    # Адаптируем под модель
+                    content = self.adapt_to_model_specifics(self.openrouter_model, content)
+                    
+                    messages.append({
+                        "role": msg["role"],
+                        "content": content
+                    })
+                    prompt_tokens += self.estimate_tokens(content)
+            
+            # Добавляем текущее сообщение пользователя
+            messages.append({
+                "role": "user",
+                "content": user_message
+            })
+            prompt_tokens += self.estimate_tokens(user_message)
+            
+            # Оцениваем стоимость запроса
+            estimated_completion_tokens = 200  # Приблизительная оценка длины ответа
+            estimated_cost = self.estimate_cost(self.openrouter_model, prompt_tokens, estimated_completion_tokens)
+            
+            # Проверяем лимиты стоимости
+            if not self.check_cost_limits(estimated_cost):
+                return f"Запрос отклонен: оценочная стоимость ({estimated_cost:.4f} USD) превышает установленный лимит. Пожалуйста, уточните ваш запрос или увеличьте лимит."
+            
+            # Подготавливаем заголовки для API запроса
+            headers = {
+                "Authorization": f"Bearer {self.openrouter_api_key}",
+                "Content-Type": "application/json"
+            }
+            
+            # Подготавливаем тело запроса
+            payload = {
+                "model": self.openrouter_model,
+                "messages": messages,
+                "temperature": 0.7,
+                "max_tokens": 500
+            }
+            
+            # Отправляем запрос к OpenRouter API
+            response = requests.post(
+                "https://openrouter.ai/api/v1/chat/completions",
+                headers=headers,
+                json=payload,
+                timeout=30
+            )
+            
+            # Проверяем статус ответа
+            response.raise_for_status()
+            
+            # Извлекаем ответ из JSON
+            response_data = response.json()
+            ai_response = response_data["choices"][0]["message"]["content"].strip()
+            
+            return ai_response
+            
+        except requests.exceptions.RequestException as e:
+            log.error(f"Ошибка сети при запросе к OpenRouter: {e}")
+            return f"Ошибка сети при взаимодействии с OpenRouter: {str(e)}"
+        except KeyError as e:
+            log.error(f"Ошибка обработки ответа от OpenRouter: {e}")
+            return "Ошибка обработки ответа от OpenRouter. Проверьте настройки OpenRouter."
+        except Exception as e:
+            log.error(f"Неожиданная ошибка при получении ответа от OpenRouter: {e}")
+            return f"Произошла ошибка при взаимодействии с OpenRouter: {str(e)}"
         
         # Локальный ИИ настройки (LM Studio) (для анализа паттернов)
         self.enable_local_ai_patterns = self.config.get('enable_local_ai_patterns', False)

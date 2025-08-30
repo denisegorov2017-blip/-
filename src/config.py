@@ -151,6 +151,31 @@ DEFAULT_CONFIG: Dict[str, Any] = {
     # Модель OpenRouter для анализа паттернов
     'openrouter_patterns_model': 'anthropic/claude-3-sonnet',
     
+    # === НАСТРОЙКИ ВСТРОЕННОГО ИИ ===
+    # Уровень экономии токенов: 'none', 'low', 'medium', 'high'
+    'token_saving_mode': 'none',
+    
+    # Лимит стоимости ИИ запросов (в долларах США)
+    'ai_cost_limit': 0.1,
+    
+    # Включить обучение встроенного ИИ на основе обратной связи
+    'enable_builtin_ai_training': True,
+    
+    # Путь к файлу истории чата ИИ
+    'ai_chat_history_file': 'результаты/ai_chat_history.json',
+    
+    # Путь к файлу обратной связи пользователей
+    'ai_feedback_file': 'результаты/user_feedback.json',
+    
+    # Путь к файлу рейтингов чатов
+    'ai_ratings_file': 'результаты/chat_ratings.json',
+    
+    # Путь к файлу базы знаний встроенного ИИ
+    'ai_knowledge_base_file': 'результаты/ai_knowledge_base.json',
+    
+    # Путь к файлу данных для обучения встроенного ИИ
+    'ai_training_data_file': 'результаты/ai_training_data.json',
+    
     # === УСТАРЕВШИЕ НАСТРОЙКИ ИИ (СОВМЕСТИМОСТЬ) ===
     # Включить использование внешнего ИИ
     'enable_external_ai': False,
@@ -419,6 +444,42 @@ CONFIG_VALIDATION_RULES: Dict[str, Dict[str, Any]] = {
         'required': False
     },
     'openrouter_patterns_model': {
+        'type': str,
+        'required': True
+    },
+    # Новые настройки встроенного ИИ
+    'token_saving_mode': {
+        'type': str,
+        'allowed_values': ['none', 'low', 'medium', 'high'],
+        'required': True
+    },
+    'ai_cost_limit': {
+        'type': float,
+        'min': 0.0,
+        'max': 10.0,
+        'required': True
+    },
+    'enable_builtin_ai_training': {
+        'type': bool,
+        'required': True
+    },
+    'ai_chat_history_file': {
+        'type': str,
+        'required': True
+    },
+    'ai_feedback_file': {
+        'type': str,
+        'required': True
+    },
+    'ai_ratings_file': {
+        'type': str,
+        'required': True
+    },
+    'ai_knowledge_base_file': {
+        'type': str,
+        'required': True
+    },
+    'ai_training_data_file': {
         'type': str,
         'required': True
     },
