@@ -29,6 +29,11 @@ class ShrinkageVerificationSystem:
     
     Проверяет точность рассчитанных коэффициентов путем обратного пересчета
     предварительной усушки по тем же коэффициентам.
+    
+    УЛУЧШЕНИЯ:
+    - Проверка точного совпадения для достижения 100% точности
+    - Улучшенные метрики оценки точности
+    - Обработка особых случаев (без усушки, излишки)
     """
     
     def __init__(self):
@@ -72,8 +77,21 @@ class ShrinkageVerificationSystem:
                 original_data.get('initial_balance', 0)
             )
             
+            # Для требования 100% точности значения должны точно совпадать
+            is_exact_match = np.isclose(
+                preliminary_results['predicted_shrinkage'], 
+                actual_shrinkage, 
+                rtol=1e-10
+            )
+            
             # Определяем статус валидации
             validation_status = self._determine_validation_status(accuracy_metrics)
+            
+            # Для 100% точности проверяем точное совпадение
+            if is_exact_match:
+                accuracy_metrics['accuracy'] = 100.0
+                validation_status['overall_status'] = 'acceptable'
+                validation_status['recommendation'] = 'Коэффициенты достигли 100% точности. Модель адекватна.'
             
             return {
                 'verification_status': 'success',
@@ -82,6 +100,7 @@ class ShrinkageVerificationSystem:
                 'accuracy_metrics': accuracy_metrics,
                 'validation_status': validation_status,
                 'coefficients_used': coefficients,
+                'is_exact_match': is_exact_match,
                 'verification_date': datetime.now().strftime("%d.%m.%y %H:%M:%S")
             }
             
@@ -107,26 +126,47 @@ class ShrinkageVerificationSystem:
         Returns:
             Dict: Результаты предварительного расчета
         """
-        # Определяем начальный баланс
-        initial_balance = original_data.get('initial_balance', 0)
-        incoming = original_data.get('incoming', 0)
-        outgoing = original_data.get('outgoing', 0)
-        
-        # Рассчитываем текущий баланс
-        current_balance = initial_balance + incoming - outgoing
-        
-        # Получаем количество дней хранения
-        days = original_data.get('storage_days', 7)
-        
-        # Извлекаем коэффициенты
+        # Использование идентичной обработки данных для обратного расчета
+        model_type = coefficients.get('model_type', 'exponential')
         coeff_values = coefficients.get('coefficients', {})
         
-        return self.calculator.calculate_preliminary_shrinkage(
-            current_balance=current_balance,
-            coefficients=coeff_values,
-            days=days,
-            model_type=model_type
-        )
+        # Расчет предсказанной усушки с использованием той же модели
+        initial_balance = original_data.get('initial_balance', 0)
+        storage_days = original_data.get('storage_days', 7)
+        
+        if model_type == 'exponential':
+            a = coeff_values.get('a', 0)
+            b = coeff_values.get('b', 0.049)
+            c = coeff_values.get('c', 0)
+            
+            # Точный обратный расчет
+            predicted_shrinkage_rate = a * (1 - np.exp(-b * storage_days)) + c * storage_days
+            predicted_shrinkage = predicted_shrinkage_rate * initial_balance
+        else:
+            # Обработка других типов моделей
+            return self.calculator.calculate_preliminary_shrinkage(
+                current_balance=initial_balance,
+                coefficients=coeff_values,
+                days=storage_days,
+                model_type=model_type
+            )
+        
+        # Расчет фактической усушки из данных инвентаризации
+        actual_shrinkage = self._calculate_actual_shrinkage(original_data)
+        
+        # Для требования 100% точности предсказанные значения должны точно совпадать с фактической усушкой
+        is_exact_match = np.isclose(predicted_shrinkage, actual_shrinkage, rtol=1e-10)
+        
+        return {
+            'predicted_shrinkage': predicted_shrinkage,
+            'shrinkage_rate': predicted_shrinkage_rate,
+            'final_balance': initial_balance - predicted_shrinkage,
+            'days': storage_days,
+            'status': 'success' if is_exact_match else 'warning',
+            'message': 'Точное совпадение' if is_exact_match else 'Неточное совпадение',
+            'model_type': model_type,
+            'coefficients_used': coeff_values
+        }
     
     def _calculate_actual_shrinkage(self, original_data: Dict[str, Any]) -> float:
         """

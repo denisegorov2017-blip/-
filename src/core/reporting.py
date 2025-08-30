@@ -26,6 +26,10 @@ from core.test_data_manager import TestDataManager
 class ReportGenerator:
     """
     Генерирует отчеты и сводную статистику по результатам расчетов.
+    
+    УЛУЧШЕНИЯ:
+    - Отдельный отчет для позиций без инвентаризации
+    - Улучшенная сводная статистика с информацией о различных типах позиций
     """
     def __init__(self, config: Dict[str, Any]):
         """
@@ -94,12 +98,29 @@ class ReportGenerator:
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
             reports = {}
             
-            # Генерируем отчет по коэффициентам
-            if coefficients:
+            # Разделяем коэффициенты на обычные и без инвентаризации
+            regular_coefficients = []
+            no_inventory_coefficients = []
+            
+            for coeff in coefficients:
+                if coeff.get('nomenclature_type') in ['no_shrinkage', 'surplus']:
+                    no_inventory_coefficients.append(coeff)
+                else:
+                    regular_coefficients.append(coeff)
+            
+            # Генерируем отчет по обычным коэффициентам
+            if regular_coefficients:
                 coefficients_path = os.path.join(output_dir, f"коэффициенты_усушки_{base_name}_{timestamp}.html")
-                self.reporter.generate_coefficients_report(coefficients, coefficients_path, "Коэффициенты усушки (автоматический расчет)")
+                self.reporter.generate_coefficients_report(regular_coefficients, coefficients_path, "Коэффициенты усушки (автоматический расчет)")
                 reports['coefficients'] = coefficients_path
                 log.info(f"Отчет по коэффициентам сохранен: {coefficients_path}")
+            
+            # Генерируем отчет по позициям без инвентаризации
+            if no_inventory_coefficients:
+                no_inventory_path = os.path.join(output_dir, f"позиции_без_инвентаризации_{base_name}_{timestamp}.html")
+                self.reporter.generate_coefficients_report(no_inventory_coefficients, no_inventory_path, "Позиции без инвентаризации")
+                reports['no_inventory'] = no_inventory_path
+                log.info(f"Отчет по позициям без инвентаризации сохранен: {no_inventory_path}")
             
             # Генерируем отчет об ошибках, если есть
             if errors:
@@ -130,14 +151,26 @@ class ReportGenerator:
                 log.warning("Нет коэффициентов для генерации сводки")
                 return {'total_positions': 0, 'avg_accuracy': 0, 'error_count': len(errors)}
             
-            # Вычисляем точности
-            accuracies = [r.get('Точность', 0) for r in coefficients if r.get('Точность', 0) > 0]
+            # Разделяем коэффициенты на обычные и без инвентаризации
+            regular_coefficients = []
+            no_inventory_coefficients = []
+            
+            for coeff in coefficients:
+                if coeff.get('nomenclature_type') in ['no_shrinkage', 'surplus']:
+                    no_inventory_coefficients.append(coeff)
+                else:
+                    regular_coefficients.append(coeff)
+            
+            # Вычисляем точности для обычных коэффициентов
+            accuracies = [r.get('Точность', 0) for r in regular_coefficients if r.get('Точность', 0) > 0]
             
             # Вычисляем среднюю точность
             avg_accuracy = sum(accuracies) / len(accuracies) if accuracies else 0
             
             summary = {
                 'total_positions': len(coefficients),
+                'regular_positions': len(regular_coefficients),
+                'no_inventory_positions': len(no_inventory_coefficients),
                 'avg_accuracy': avg_accuracy,
                 'error_count': len(errors)
             }
