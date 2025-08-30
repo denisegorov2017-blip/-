@@ -637,8 +637,8 @@ class ShrinkageCalculatorGUI:
         # Create settings window
         settings_window = tk.Toplevel(self.root)
         settings_window.title("Настройки ИИ-чата")
-        settings_window.geometry("500x600")
-        settings_window.resizable(False, False)
+        settings_window.geometry("600x700")
+        settings_window.resizable(True, True)
         settings_window.configure(bg='#f8fafc')
         
         # Center the window
@@ -657,50 +657,50 @@ class ShrinkageCalculatorGUI:
                  background='#f8fafc').pack(pady=(0, 15))
         
         ttk.Label(builtin_frame, text="Встроенный ИИ работает без подключения к интернету и не требует дополнительных настроек.", 
-                 font=('Segoe UI', 10), wraplength=400, background='#f8fafc').pack(anchor=tk.W)
+                 font=('Segoe UI', 10), wraplength=500, background='#f8fafc').pack(anchor=tk.W)
         
-        # === External AI Tab ===
-        external_frame = ttk.Frame(notebook, padding="20")
-        notebook.add(external_frame, text="Внешний ИИ")
+        # === External AI (Calculations) Tab ===
+        external_calc_frame = ttk.Frame(notebook, padding="20")
+        notebook.add(external_calc_frame, text="Внешний ИИ (Расчеты)")
         
-        # Variables for external AI settings
-        enable_external_ai = tk.BooleanVar(value=self.ai_chat.enable_external_ai)
-        external_api_key = tk.StringVar(value=self.ai_chat.external_ai_api_key)
-        external_model = tk.StringVar(value=self.ai_chat.external_ai_model)
-        external_base_url = tk.StringVar(value=self.ai_chat.external_ai_base_url)
+        # Variables for external AI settings (calculations)
+        enable_external_ai_calc = tk.BooleanVar(value=self.ai_chat.enable_external_ai_calculations)
+        external_calc_api_key = tk.StringVar(value=self.ai_chat.external_ai_calculations_api_key)
+        external_calc_model = tk.StringVar(value=self.ai_chat.external_ai_calculations_model)
+        external_calc_base_url = tk.StringVar(value=self.ai_chat.external_ai_calculations_base_url)
         
-        ttk.Label(external_frame, text="Внешний ИИ", font=('Segoe UI', 14, 'bold'), 
+        ttk.Label(external_calc_frame, text="Внешний ИИ для расчетов", font=('Segoe UI', 14, 'bold'), 
                  background='#f8fafc').pack(pady=(0, 15))
         
         # Enable external AI checkbox
-        ttk.Checkbutton(external_frame, text="Включить внешний ИИ", variable=enable_external_ai).pack(anchor=tk.W)
+        ttk.Checkbutton(external_calc_frame, text="Включить внешний ИИ для расчетов", variable=enable_external_ai_calc).pack(anchor=tk.W)
         
         # API Key entry
-        api_frame = ttk.LabelFrame(external_frame, text="API ключ", padding="10")
-        api_frame.pack(fill=tk.X, pady=10)
+        calc_api_frame = ttk.LabelFrame(external_calc_frame, text="API ключ для расчетов", padding="10")
+        calc_api_frame.pack(fill=tk.X, pady=10)
         
-        api_entry = ttk.Entry(api_frame, textvariable=external_api_key, show="*", width=40)
-        api_entry.pack(fill=tk.X)
+        calc_api_entry = ttk.Entry(calc_api_frame, textvariable=external_calc_api_key, show="*", width=40)
+        calc_api_entry.pack(fill=tk.X)
         
         # Base URL entry
-        url_frame = ttk.LabelFrame(external_frame, text="Базовый URL", padding="10")
-        url_frame.pack(fill=tk.X, pady=10)
+        calc_url_frame = ttk.LabelFrame(external_calc_frame, text="Базовый URL для расчетов", padding="10")
+        calc_url_frame.pack(fill=tk.X, pady=10)
         
-        url_entry = ttk.Entry(url_frame, textvariable=external_base_url, width=40)
-        url_entry.pack(fill=tk.X)
+        calc_url_entry = ttk.Entry(calc_url_frame, textvariable=external_calc_base_url, width=40)
+        calc_url_entry.pack(fill=tk.X)
         
         # Model selection
-        model_frame = ttk.LabelFrame(external_frame, text="Модель ИИ", padding="10")
-        model_frame.pack(fill=tk.X, pady=10)
+        calc_model_frame = ttk.LabelFrame(external_calc_frame, text="Модель ИИ для расчетов", padding="10")
+        calc_model_frame.pack(fill=tk.X, pady=10)
         
-        external_model_combo = ttk.Combobox(model_frame, textvariable=external_model, 
+        calc_model_combo = ttk.Combobox(calc_model_frame, textvariable=external_calc_model, 
                                   values=["gpt-3.5-turbo", "gpt-4", "gpt-4-turbo", "claude-3-haiku", "claude-3-sonnet", "other"],
                                   state="readonly", width=37)
-        external_model_combo.pack(fill=tk.X)
+        calc_model_combo.pack(fill=tk.X)
         
-        # Добавляем tooltip для внешней модели
-        external_model_tooltip = create_tooltip(external_model_combo, 
-            "Выберите модель внешнего ИИ:\n\n"
+        # Добавляем tooltip для внешней модели расчетов
+        calc_model_tooltip = create_tooltip(calc_model_combo, 
+            "Выберите модель внешнего ИИ для расчетов:\n\n"
             "• gpt-3.5-turbo - Быстрая и экономичная модель OpenAI\n"
             "• gpt-4 - Более мощная модель OpenAI с лучшим пониманием\n"
             "• gpt-4-turbo - Самая современная модель OpenAI\n"
@@ -708,45 +708,96 @@ class ShrinkageCalculatorGUI:
             "• claude-3-sonnet - Сбалансированная модель Anthropic\n"
             "• other - Другая модель (укажите в настройках API)")
         
-        ttk.Label(external_frame, text="Примечание: Для использования внешних ИИ сервисов необходимо иметь действующий API ключ.",
-                 font=('Segoe UI', 9), foreground='#64748b', wraplength=400).pack(anchor=tk.W, pady=(10, 0))
+        ttk.Label(external_calc_frame, text="Примечание: Для использования внешних ИИ сервисов необходимо иметь действующий API ключ.",
+                 font=('Segoe UI', 9), foreground='#64748b', wraplength=500).pack(anchor=tk.W, pady=(10, 0))
         
-        # === Local AI Tab ===
-        local_frame = ttk.Frame(notebook, padding="20")
-        notebook.add(local_frame, text="Локальный ИИ")
+        # === External AI (Patterns) Tab ===
+        external_pattern_frame = ttk.Frame(notebook, padding="20")
+        notebook.add(external_pattern_frame, text="Внешний ИИ (Паттерны)")
         
-        # Variables for local AI settings
-        enable_local_ai = tk.BooleanVar(value=self.ai_chat.enable_local_ai)
-        local_model = tk.StringVar(value=self.ai_chat.local_ai_model)
-        local_base_url = tk.StringVar(value=self.ai_chat.local_ai_base_url)
+        # Variables for external AI settings (patterns)
+        enable_external_ai_pattern = tk.BooleanVar(value=self.ai_chat.enable_external_ai_patterns)
+        external_pattern_api_key = tk.StringVar(value=self.ai_chat.external_ai_patterns_api_key)
+        external_pattern_model = tk.StringVar(value=self.ai_chat.external_ai_patterns_model)
+        external_pattern_base_url = tk.StringVar(value=self.ai_chat.external_ai_patterns_base_url)
         
-        ttk.Label(local_frame, text="Локальный ИИ (LM Studio)", font=('Segoe UI', 14, 'bold'), 
+        ttk.Label(external_pattern_frame, text="Внешний ИИ для анализа паттернов", font=('Segoe UI', 14, 'bold'), 
+                 background='#f8fafc').pack(pady=(0, 15))
+        
+        # Enable external AI checkbox
+        ttk.Checkbutton(external_pattern_frame, text="Включить внешний ИИ для анализа паттернов", variable=enable_external_ai_pattern).pack(anchor=tk.W)
+        
+        # API Key entry
+        pattern_api_frame = ttk.LabelFrame(external_pattern_frame, text="API ключ для анализа паттернов", padding="10")
+        pattern_api_frame.pack(fill=tk.X, pady=10)
+        
+        pattern_api_entry = ttk.Entry(pattern_api_frame, textvariable=external_pattern_api_key, show="*", width=40)
+        pattern_api_entry.pack(fill=tk.X)
+        
+        # Base URL entry
+        pattern_url_frame = ttk.LabelFrame(external_pattern_frame, text="Базовый URL для анализа паттернов", padding="10")
+        pattern_url_frame.pack(fill=tk.X, pady=10)
+        
+        pattern_url_entry = ttk.Entry(pattern_url_frame, textvariable=external_pattern_base_url, width=40)
+        pattern_url_entry.pack(fill=tk.X)
+        
+        # Model selection
+        pattern_model_frame = ttk.LabelFrame(external_pattern_frame, text="Модель ИИ для анализа паттернов", padding="10")
+        pattern_model_frame.pack(fill=tk.X, pady=10)
+        
+        pattern_model_combo = ttk.Combobox(pattern_model_frame, textvariable=external_pattern_model, 
+                                  values=["gpt-4", "gpt-4-turbo", "claude-3-sonnet", "claude-3-opus", "other"],
+                                  state="readonly", width=37)
+        pattern_model_combo.pack(fill=tk.X)
+        
+        # Добавляем tooltip для внешней модели паттернов
+        pattern_model_tooltip = create_tooltip(pattern_model_combo, 
+            "Выберите модель внешнего ИИ для анализа паттернов:\n\n"
+            "• gpt-4 - Мощная модель OpenAI для анализа\n"
+            "• gpt-4-turbo - Самая современная модель OpenAI\n"
+            "• claude-3-sonnet - Сбалансированная модель Anthropic\n"
+            "• claude-3-opus - Самая мощная модель Anthropic\n"
+            "• other - Другая модель (укажите в настройках API)")
+        
+        ttk.Label(external_pattern_frame, text="Примечание: Для анализа паттернов рекомендуются более мощные модели ИИ.",
+                 font=('Segoe UI', 9), foreground='#64748b', wraplength=500).pack(anchor=tk.W, pady=(10, 0))
+        
+        # === Local AI (Calculations) Tab ===
+        local_calc_frame = ttk.Frame(notebook, padding="20")
+        notebook.add(local_calc_frame, text="Локальный ИИ (Расчеты)")
+        
+        # Variables for local AI settings (calculations)
+        enable_local_ai_calc = tk.BooleanVar(value=self.ai_chat.enable_local_ai_calculations)
+        local_calc_model = tk.StringVar(value=self.ai_chat.local_ai_calculations_model)
+        local_calc_base_url = tk.StringVar(value=self.ai_chat.local_ai_calculations_base_url)
+        
+        ttk.Label(local_calc_frame, text="Локальный ИИ для расчетов (LM Studio)", font=('Segoe UI', 14, 'bold'), 
                  background='#f8fafc').pack(pady=(0, 15))
         
         # Enable local AI checkbox
-        ttk.Checkbutton(local_frame, text="Включить локальный ИИ", variable=enable_local_ai).pack(anchor=tk.W)
+        ttk.Checkbutton(local_calc_frame, text="Включить локальный ИИ для расчетов", variable=enable_local_ai_calc).pack(anchor=tk.W)
         
         # Base URL entry
-        local_url_frame = ttk.LabelFrame(local_frame, text="URL сервера LM Studio", padding="10")
-        local_url_frame.pack(fill=tk.X, pady=10)
+        local_calc_url_frame = ttk.LabelFrame(local_calc_frame, text="URL сервера LM Studio для расчетов", padding="10")
+        local_calc_url_frame.pack(fill=tk.X, pady=10)
         
-        local_url_entry = ttk.Entry(local_url_frame, textvariable=local_base_url, width=40)
-        local_url_entry.pack(fill=tk.X)
-        ttk.Label(local_url_frame, text="По умолчанию: http://localhost:1234/v1", 
+        local_calc_url_entry = ttk.Entry(local_calc_url_frame, textvariable=local_calc_base_url, width=40)
+        local_calc_url_entry.pack(fill=tk.X)
+        ttk.Label(local_calc_url_frame, text="По умолчанию: http://localhost:1234/v1", 
                  font=('Segoe UI', 9), foreground='#64748b').pack(anchor=tk.W, pady=(5, 0))
         
         # Model selection
-        local_model_frame = ttk.LabelFrame(local_frame, text="Модель локального ИИ", padding="10")
-        local_model_frame.pack(fill=tk.X, pady=10)
+        local_calc_model_frame = ttk.LabelFrame(local_calc_frame, text="Модель локального ИИ для расчетов", padding="10")
+        local_calc_model_frame.pack(fill=tk.X, pady=10)
         
-        local_model_combo = ttk.Combobox(local_model_frame, textvariable=local_model, 
+        local_calc_model_combo = ttk.Combobox(local_calc_model_frame, textvariable=local_calc_model, 
                                         values=["gpt-3.5-turbo", "gpt-4", "llama3", "qwen", "gemma", "mistral", "other"],
                                         state="readonly", width=37)
-        local_model_combo.pack(fill=tk.X)
+        local_calc_model_combo.pack(fill=tk.X)
         
-        # Добавляем tooltip для локальной модели
-        local_model_tooltip = create_tooltip(local_model_combo,
-            "Выберите модель локального ИИ:\n\n"
+        # Добавляем tooltip для локальной модели расчетов
+        local_calc_model_tooltip = create_tooltip(local_calc_model_combo,
+            "Выберите модель локального ИИ для расчетов:\n\n"
             "• gpt-3.5-turbo - Совместимая модель OpenAI\n"
             "• gpt-4 - Совместимая модель OpenAI\n"
             "• llama3 - Модель Meta (рекомендуется для русского языка)\n"
@@ -759,48 +810,102 @@ class ShrinkageCalculatorGUI:
             "• Для 16 ГБ RAM: llama3-8b или qwen-8b\n"
             "• Для 32+ ГБ RAM: llama3-70b или mistral-large")
         
-        ttk.Label(local_frame, text="Примечание: Для использования локального ИИ необходимо установить LM Studio и запустить сервер с моделью.",
-                 font=('Segoe UI', 9), foreground='#64748b', wraplength=400).pack(anchor=tk.W, pady=(10, 0))
+        ttk.Label(local_calc_frame, text="Примечание: Для использования локального ИИ необходимо установить LM Studio и запустить сервер с моделью.",
+                 font=('Segoe UI', 9), foreground='#64748b', wraplength=500).pack(anchor=tk.W, pady=(10, 0))
         
-        # === OpenRouter Tab ===
-        openrouter_frame = ttk.Frame(notebook, padding="20")
-        notebook.add(openrouter_frame, text="OpenRouter")
+        # === Local AI (Patterns) Tab ===
+        local_pattern_frame = ttk.Frame(notebook, padding="20")
+        notebook.add(local_pattern_frame, text="Локальный ИИ (Паттерны)")
         
-        # Variables for OpenRouter settings
-        enable_openrouter = tk.BooleanVar(value=self.ai_chat.enable_openrouter)
-        openrouter_api_key = tk.StringVar(value=self.ai_chat.openrouter_api_key)
-        openrouter_model = tk.StringVar(value=self.ai_chat.openrouter_model)
+        # Variables for local AI settings (patterns)
+        enable_local_ai_pattern = tk.BooleanVar(value=self.ai_chat.enable_local_ai_patterns)
+        local_pattern_model = tk.StringVar(value=self.ai_chat.local_ai_patterns_model)
+        local_pattern_base_url = tk.StringVar(value=self.ai_chat.local_ai_patterns_base_url)
         
-        ttk.Label(openrouter_frame, text="OpenRouter", font=('Segoe UI', 14, 'bold'), 
+        ttk.Label(local_pattern_frame, text="Локальный ИИ для анализа паттернов (LM Studio)", font=('Segoe UI', 14, 'bold'), 
                  background='#f8fafc').pack(pady=(0, 15))
         
-        # Enable OpenRouter checkbox
-        ttk.Checkbutton(openrouter_frame, text="Включить OpenRouter", variable=enable_openrouter).pack(anchor=tk.W)
+        # Enable local AI checkbox
+        ttk.Checkbutton(local_pattern_frame, text="Включить локальный ИИ для анализа паттернов", variable=enable_local_ai_pattern).pack(anchor=tk.W)
         
-        # API Key entry
-        or_api_frame = ttk.LabelFrame(openrouter_frame, text="API ключ OpenRouter", padding="10")
-        or_api_frame.pack(fill=tk.X, pady=10)
+        # Base URL entry
+        local_pattern_url_frame = ttk.LabelFrame(local_pattern_frame, text="URL сервера LM Studio для анализа паттернов", padding="10")
+        local_pattern_url_frame.pack(fill=tk.X, pady=10)
         
-        or_api_entry = ttk.Entry(or_api_frame, textvariable=openrouter_api_key, show="*", width=40)
-        or_api_entry.pack(fill=tk.X)
-        ttk.Label(or_api_frame, text="Получите API ключ на https://openrouter.ai", 
+        local_pattern_url_entry = ttk.Entry(local_pattern_url_frame, textvariable=local_pattern_base_url, width=40)
+        local_pattern_url_entry.pack(fill=tk.X)
+        ttk.Label(local_pattern_url_frame, text="По умолчанию: http://localhost:1235/v1", 
                  font=('Segoe UI', 9), foreground='#64748b').pack(anchor=tk.W, pady=(5, 0))
         
         # Model selection
-        or_model_frame = ttk.LabelFrame(openrouter_frame, text="Модель OpenRouter", padding="10")
-        or_model_frame.pack(fill=tk.X, pady=10)
+        local_pattern_model_frame = ttk.LabelFrame(local_pattern_frame, text="Модель локального ИИ для анализа паттернов", padding="10")
+        local_pattern_model_frame.pack(fill=tk.X, pady=10)
         
-        or_model_combo = ttk.Combobox(or_model_frame, textvariable=openrouter_model, 
+        local_pattern_model_combo = ttk.Combobox(local_pattern_model_frame, textvariable=local_pattern_model, 
+                                        values=["llama3", "qwen", "gemma", "mistral", "other"],
+                                        state="readonly", width=37)
+        local_pattern_model_combo.pack(fill=tk.X)
+        
+        # Добавляем tooltip для локальной модели паттернов
+        local_pattern_model_tooltip = create_tooltip(local_pattern_model_combo,
+            "Выберите модель локального ИИ для анализа паттернов:\n\n"
+            "• llama3 - Модель Meta (рекомендуется для русского языка)\n"
+            "• qwen - Модель Alibaba с отличной поддержкой русского языка\n"
+            "• gemma - Модель Google\n"
+            "• mistral - Модель Mistral AI\n"
+            "• other - Другая модель (укажите в настройках LM Studio)\n\n"
+            "Рекомендации:\n"
+            "• Для 8 ГБ RAM: qwen-4b или gemma-4b\n"
+            "• Для 16 ГБ RAM: llama3-8b или qwen-8b\n"
+            "• Для 32+ ГБ RAM: llama3-70b или mistral-large")
+        
+        ttk.Label(local_pattern_frame, text="Примечание: Для анализа паттернов рекомендуются мощные модели ИИ.",
+                 font=('Segoe UI', 9), foreground='#64748b', wraplength=500).pack(anchor=tk.W, pady=(10, 0))
+        
+        # === OpenRouter (Calculations) Tab ===
+        openrouter_calc_frame = ttk.Frame(notebook, padding="20")
+        notebook.add(openrouter_calc_frame, text="OpenRouter (Расчеты)")
+        
+        # Variables for OpenRouter settings (calculations)
+        enable_openrouter_calc = tk.BooleanVar(value=self.ai_chat.enable_openrouter_calculations)
+        openrouter_calc_api_key = tk.StringVar(value=self.ai_chat.openrouter_calculations_api_key)
+        openrouter_calc_model = tk.StringVar(value=self.ai_chat.openrouter_calculations_model)
+        
+        ttk.Label(openrouter_calc_frame, text="OpenRouter для расчетов", font=('Segoe UI', 14, 'bold'), 
+                 background='#f8fafc').pack(pady=(0, 15))
+        
+        # Enable OpenRouter checkbox
+        ttk.Checkbutton(openrouter_calc_frame, text="Включить OpenRouter для расчетов", variable=enable_openrouter_calc).pack(anchor=tk.W)
+        
+        # API Key entry
+        or_calc_api_frame = ttk.LabelFrame(openrouter_calc_frame, text="API ключ OpenRouter для расчетов", padding="10")
+        or_calc_api_frame.pack(fill=tk.X, pady=10)
+        
+        or_calc_api_entry = ttk.Entry(or_calc_api_frame, textvariable=openrouter_calc_api_key, show="*", width=40)
+        or_calc_api_entry.pack(fill=tk.X)
+        ttk.Label(or_calc_api_frame, text="Получите API ключ на https://openrouter.ai", 
+                 font=('Segoe UI', 9), foreground='#64748b').pack(anchor=tk.W, pady=(5, 0))
+        
+        # Model selection
+        or_calc_model_frame = ttk.LabelFrame(openrouter_calc_frame, text="Модель OpenRouter для расчетов", padding="10")
+        or_calc_model_frame.pack(fill=tk.X, pady=10)
+        
+        or_calc_model_combo = ttk.Combobox(or_calc_model_frame, textvariable=openrouter_calc_model, 
                                      values=["openai/gpt-3.5-turbo", "openai/gpt-4", "openai/gpt-4-turbo", 
                                             "anthropic/claude-3-haiku", "anthropic/claude-3-sonnet", 
                                             "google/gemini-pro", "meta-llama/llama-3-8b-instruct", 
                                             "mistralai/mistral-7b-instruct", "other"],
                                      state="readonly", width=37)
-        or_model_combo.pack(fill=tk.X)
+        or_calc_model_combo.pack(fill=tk.X)
         
-        # Добавляем tooltip для OpenRouter модели
-        or_model_tooltip = create_tooltip(or_model_combo,
-            "Выберите модель OpenRouter:\n\n"
+        # Добавляем tooltip для OpenRouter модели расчетов
+        or_calc_model_tooltip = create_tooltip(or_calc_model_combo,
+            "Выберите модель OpenRouter для расчетов:\n\n"
+            "БЕСПЛАТНЫЕ МОДЕЛИ:\n"
+            "• mistralai/mistral-7b-instruct - Бесплатная модель Mistral AI\n"
+            "• nousresearch/nous-capybara-7b - Бесплатная модель\n"
+            "• openchat/openchat-7b - Бесплатная модель\n\n"
+            "ПЛАТНЫЕ МОДЕЛИ:\n"
             "• openai/gpt-3.5-turbo - Быстрая и экономичная модель OpenAI\n"
             "• openai/gpt-4 - Более мощная модель OpenAI\n"
             "• openai/gpt-4-turbo - Самая современная модель OpenAI\n"
@@ -808,7 +913,6 @@ class ShrinkageCalculatorGUI:
             "• anthropic/claude-3-sonnet - Сбалансированная модель Anthropic\n"
             "• google/gemini-pro - Модель Google\n"
             "• meta-llama/llama-3-8b-instruct - Модель Meta\n"
-            "• mistralai/mistral-7b-instruct - Модель Mistral AI\n"
             "• other - Другая модель из каталога OpenRouter\n\n"
             "Преимущества OpenRouter:\n"
             "• Доступ к 400+ моделям через единый API\n"
@@ -816,8 +920,64 @@ class ShrinkageCalculatorGUI:
             "• Автоматическое распределение нагрузки\n"
             "• Отказоустойчивость")
         
-        ttk.Label(openrouter_frame, text="Примечание: OpenRouter предоставляет доступ к более чем 400 моделям ИИ через единый API.",
-                 font=('Segoe UI', 9), foreground='#64748b', wraplength=400).pack(anchor=tk.W, pady=(10, 0))
+        ttk.Label(openrouter_calc_frame, text="Примечание: OpenRouter предоставляет доступ к более чем 400 моделям ИИ через единый API.",
+                 font=('Segoe UI', 9), foreground='#64748b', wraplength=500).pack(anchor=tk.W, pady=(10, 0))
+        
+        # === OpenRouter (Patterns) Tab ===
+        openrouter_pattern_frame = ttk.Frame(notebook, padding="20")
+        notebook.add(openrouter_pattern_frame, text="OpenRouter (Паттерны)")
+        
+        # Variables for OpenRouter settings (patterns)
+        enable_openrouter_pattern = tk.BooleanVar(value=self.ai_chat.enable_openrouter_patterns)
+        openrouter_pattern_api_key = tk.StringVar(value=self.ai_chat.openrouter_patterns_api_key)
+        openrouter_pattern_model = tk.StringVar(value=self.ai_chat.openrouter_patterns_model)
+        
+        ttk.Label(openrouter_pattern_frame, text="OpenRouter для анализа паттернов", font=('Segoe UI', 14, 'bold'), 
+                 background='#f8fafc').pack(pady=(0, 15))
+        
+        # Enable OpenRouter checkbox
+        ttk.Checkbutton(openrouter_pattern_frame, text="Включить OpenRouter для анализа паттернов", variable=enable_openrouter_pattern).pack(anchor=tk.W)
+        
+        # API Key entry
+        or_pattern_api_frame = ttk.LabelFrame(openrouter_pattern_frame, text="API ключ OpenRouter для анализа паттернов", padding="10")
+        or_pattern_api_frame.pack(fill=tk.X, pady=10)
+        
+        or_pattern_api_entry = ttk.Entry(or_pattern_api_frame, textvariable=openrouter_pattern_api_key, show="*", width=40)
+        or_pattern_api_entry.pack(fill=tk.X)
+        ttk.Label(or_pattern_api_frame, text="Получите API ключ на https://openrouter.ai", 
+                 font=('Segoe UI', 9), foreground='#64748b').pack(anchor=tk.W, pady=(5, 0))
+        
+        # Model selection
+        or_pattern_model_frame = ttk.LabelFrame(openrouter_pattern_frame, text="Модель OpenRouter для анализа паттернов", padding="10")
+        or_pattern_model_frame.pack(fill=tk.X, pady=10)
+        
+        or_pattern_model_combo = ttk.Combobox(or_pattern_model_frame, textvariable=openrouter_pattern_model, 
+                                     values=["anthropic/claude-3-sonnet", "anthropic/claude-3-opus", 
+                                            "openai/gpt-4", "openai/gpt-4-turbo", 
+                                            "google/gemini-pro", "meta-llama/llama-3-70b-instruct", 
+                                            "mistralai/mixtral-8x7b-instruct", "other"],
+                                     state="readonly", width=37)
+        or_pattern_model_combo.pack(fill=tk.X)
+        
+        # Добавляем tooltip для OpenRouter модели паттернов
+        or_pattern_model_tooltip = create_tooltip(or_pattern_model_combo,
+            "Выберите модель OpenRouter для анализа паттернов:\n\n"
+            "МОЩНЫЕ МОДЕЛИ:\n"
+            "• anthropic/claude-3-sonnet - Сбалансированная модель Anthropic\n"
+            "• anthropic/claude-3-opus - Самая мощная модель Anthropic\n"
+            "• openai/gpt-4 - Мощная модель OpenAI\n"
+            "• openai/gpt-4-turbo - Самая современная модель OpenAI\n"
+            "• google/gemini-pro - Модель Google\n"
+            "• meta-llama/llama-3-70b-instruct - Модель Meta\n"
+            "• mistralai/mixtral-8x7b-instruct - Модель Mistral AI\n\n"
+            "Преимущества OpenRouter:\n"
+            "• Доступ к 400+ моделям через единый API\n"
+            "• Конкуренция цен между провайдерами\n"
+            "• Автоматическое распределение нагрузки\n"
+            "• Отказоустойчивость")
+        
+        ttk.Label(openrouter_pattern_frame, text="Примечание: Для анализа паттернов рекомендуются мощные модели ИИ.",
+                 font=('Segoe UI', 9), foreground='#64748b', wraplength=500).pack(anchor=tk.W, pady=(10, 0))
         
         # Buttons
         button_frame = ttk.Frame(settings_window, padding="10")
@@ -826,16 +986,51 @@ class ShrinkageCalculatorGUI:
         def save_settings():
             """Save AI chat settings"""
             settings = {
-                'enable_external_ai': enable_external_ai.get(),
-                'external_ai_api_key': external_api_key.get(),
-                'external_ai_model': external_model.get(),
-                'external_ai_base_url': external_base_url.get(),
-                'enable_local_ai': enable_local_ai.get(),
-                'local_ai_model': local_model.get(),
-                'local_ai_base_url': local_base_url.get(),
-                'enable_openrouter': enable_openrouter.get(),
-                'openrouter_api_key': openrouter_api_key.get(),
-                'openrouter_model': openrouter_model.get()
+                # Внешний ИИ для расчетов
+                'enable_external_ai_calculations': enable_external_ai_calc.get(),
+                'external_ai_calculations_api_key': external_calc_api_key.get(),
+                'external_ai_calculations_model': external_calc_model.get(),
+                'external_ai_calculations_base_url': external_calc_base_url.get(),
+                
+                # Внешний ИИ для анализа паттернов
+                'enable_external_ai_patterns': enable_external_ai_pattern.get(),
+                'external_ai_patterns_api_key': external_pattern_api_key.get(),
+                'external_ai_patterns_model': external_pattern_model.get(),
+                'external_ai_patterns_base_url': external_pattern_base_url.get(),
+                
+                # Локальный ИИ для расчетов
+                'enable_local_ai_calculations': enable_local_ai_calc.get(),
+                'local_ai_calculations_model': local_calc_model.get(),
+                'local_ai_calculations_base_url': local_calc_base_url.get(),
+                
+                # Локальный ИИ для анализа паттернов
+                'enable_local_ai_patterns': enable_local_ai_pattern.get(),
+                'local_ai_patterns_model': local_pattern_model.get(),
+                'local_ai_patterns_base_url': local_pattern_base_url.get(),
+                
+                # OpenRouter для расчетов
+                'enable_openrouter_calculations': enable_openrouter_calc.get(),
+                'openrouter_calculations_api_key': openrouter_calc_api_key.get(),
+                'openrouter_calculations_model': openrouter_calc_model.get(),
+                
+                # OpenRouter для анализа паттернов
+                'enable_openrouter_patterns': enable_openrouter_pattern.get(),
+                'openrouter_patterns_api_key': openrouter_pattern_api_key.get(),
+                'openrouter_patterns_model': openrouter_pattern_model.get(),
+                
+                # Устаревшие настройки (сохранены для совместимости)
+                'enable_external_ai': enable_external_ai_calc.get(),  # Используем те же значения для совместимости
+                'external_ai_api_key': external_calc_api_key.get(),
+                'external_ai_model': external_calc_model.get(),
+                'external_ai_base_url': external_calc_base_url.get(),
+                
+                'enable_local_ai': enable_local_ai_calc.get(),  # Используем те же значения для совместимости
+                'local_ai_model': local_calc_model.get(),
+                'local_ai_base_url': local_calc_base_url.get(),
+                
+                'enable_openrouter': enable_openrouter_calc.get(),  # Используем те же значения для совместимости
+                'openrouter_api_key': openrouter_calc_api_key.get(),
+                'openrouter_model': openrouter_calc_model.get(),
             }
             self.ai_chat.update_settings(settings)
             settings_window.destroy()

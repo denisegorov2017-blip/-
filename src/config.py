@@ -89,7 +89,69 @@ DEFAULT_CONFIG: Dict[str, Any] = {
     # Количество ротаций логов для хранения
     'log_backup_count': 5,
     
-    # === НАСТРОЙКИ ИИ ===
+    # === НАСТРОЙКИ ИИ ДЛЯ РАСЧЕТОВ ===
+    # Включить использование внешнего ИИ для расчетов
+    'enable_external_ai_calculations': False,
+    
+    # API ключ для внешнего ИИ сервиса для расчетов
+    'external_ai_calculations_api_key': '',
+    
+    # Модель ИИ для расчетов
+    'external_ai_calculations_model': 'gpt-3.5-turbo',
+    
+    # Базовый URL для ИИ API для расчетов
+    'external_ai_calculations_base_url': 'https://api.openai.com/v1',
+    
+    # Включить использование локального ИИ (LM Studio) для расчетов
+    'enable_local_ai_calculations': False,
+    
+    # Модель локального ИИ для расчетов
+    'local_ai_calculations_model': 'gpt-3.5-turbo',
+    
+    # Базовый URL для локального ИИ API для расчетов
+    'local_ai_calculations_base_url': 'http://localhost:1234/v1',
+    
+    # Включить использование OpenRouter для расчетов
+    'enable_openrouter_calculations': False,
+    
+    # API ключ для OpenRouter для расчетов
+    'openrouter_calculations_api_key': '',
+    
+    # Модель OpenRouter для расчетов
+    'openrouter_calculations_model': 'openai/gpt-3.5-turbo',
+    
+    # === НАСТРОЙКИ ИИ ДЛЯ АНАЛИЗА ПАТТЕРНОВ ===
+    # Включить использование внешнего ИИ для анализа паттернов
+    'enable_external_ai_patterns': False,
+    
+    # API ключ для внешнего ИИ сервиса для анализа паттернов
+    'external_ai_patterns_api_key': '',
+    
+    # Модель ИИ для анализа паттернов
+    'external_ai_patterns_model': 'gpt-4',
+    
+    # Базовый URL для ИИ API для анализа паттернов
+    'external_ai_patterns_base_url': 'https://api.openai.com/v1',
+    
+    # Включить использование локального ИИ (LM Studio) для анализа паттернов
+    'enable_local_ai_patterns': False,
+    
+    # Модель локального ИИ для анализа паттернов
+    'local_ai_patterns_model': 'llama3',
+    
+    # Базовый URL для локального ИИ API для анализа паттернов
+    'local_ai_patterns_base_url': 'http://localhost:1235/v1',
+    
+    # Включить использование OpenRouter для анализа паттернов
+    'enable_openrouter_patterns': False,
+    
+    # API ключ для OpenRouter для анализа паттернов
+    'openrouter_patterns_api_key': '',
+    
+    # Модель OpenRouter для анализа паттернов
+    'openrouter_patterns_model': 'anthropic/claude-3-sonnet',
+    
+    # === УСТАРЕВШИЕ НАСТРОЙКИ ИИ (СОВМЕСТИМОСТЬ) ===
     # Включить использование внешнего ИИ
     'enable_external_ai': False,
     
@@ -280,6 +342,87 @@ CONFIG_VALIDATION_RULES: Dict[str, Dict[str, Any]] = {
         'max': 20,
         'required': True
     },
+    'enable_external_ai_calculations': {
+        'type': bool,
+        'required': True
+    },
+    'external_ai_calculations_api_key': {
+        'type': str,
+        'required': False
+    },
+    'external_ai_calculations_model': {
+        'type': str,
+        'required': True
+    },
+    'external_ai_calculations_base_url': {
+        'type': str,
+        'required': True
+    },
+    'enable_local_ai_calculations': {
+        'type': bool,
+        'required': True
+    },
+    'local_ai_calculations_model': {
+        'type': str,
+        'required': True
+    },
+    'local_ai_calculations_base_url': {
+        'type': str,
+        'required': True
+    },
+    'enable_openrouter_calculations': {
+        'type': bool,
+        'required': True
+    },
+    'openrouter_calculations_api_key': {
+        'type': str,
+        'required': False
+    },
+    'openrouter_calculations_model': {
+        'type': str,
+        'required': True
+    },
+    'enable_external_ai_patterns': {
+        'type': bool,
+        'required': True
+    },
+    'external_ai_patterns_api_key': {
+        'type': str,
+        'required': False
+    },
+    'external_ai_patterns_model': {
+        'type': str,
+        'required': True
+    },
+    'external_ai_patterns_base_url': {
+        'type': str,
+        'required': True
+    },
+    'enable_local_ai_patterns': {
+        'type': bool,
+        'required': True
+    },
+    'local_ai_patterns_model': {
+        'type': str,
+        'required': True
+    },
+    'local_ai_patterns_base_url': {
+        'type': str,
+        'required': True
+    },
+    'enable_openrouter_patterns': {
+        'type': bool,
+        'required': True
+    },
+    'openrouter_patterns_api_key': {
+        'type': str,
+        'required': False
+    },
+    'openrouter_patterns_model': {
+        'type': str,
+        'required': True
+    },
+    # Устаревшие настройки (сохранены для совместимости)
     'enable_external_ai': {
         'type': bool,
         'required': True

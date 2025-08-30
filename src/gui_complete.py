@@ -384,12 +384,12 @@ def main(page: ft.Page):
     # Settings dialog for AI chat
     def show_ai_settings(e):
         """Показывает диалог настроек ИИ чата"""
-        # Поля настроек для внешнего ИИ
-        enable_external_ai = ft.Checkbox(label="Включить внешний ИИ", value=ai_chat.enable_external_ai)
-        external_api_key_field = ft.TextField(label="API ключ внешнего ИИ", value=ai_chat.external_ai_api_key, password=True)
-        external_base_url_field = ft.TextField(label="Базовый URL внешнего ИИ", value=ai_chat.external_ai_base_url)
-        external_model_field = ft.Dropdown(
-            label="Модель внешнего ИИ",
+        # Поля настроек для внешнего ИИ (расчеты)
+        enable_external_ai_calc = ft.Checkbox(label="Включить внешний ИИ для расчетов", value=ai_chat.enable_external_ai_calculations)
+        external_calc_api_key_field = ft.TextField(label="API ключ внешнего ИИ для расчетов", value=ai_chat.external_ai_calculations_api_key, password=True)
+        external_calc_base_url_field = ft.TextField(label="Базовый URL внешнего ИИ для расчетов", value=ai_chat.external_ai_calculations_base_url)
+        external_calc_model_field = ft.Dropdown(
+            label="Модель внешнего ИИ для расчетов",
             options=[
                 ft.dropdown.Option("gpt-3.5-turbo"),
                 ft.dropdown.Option("gpt-4"),
@@ -398,8 +398,8 @@ def main(page: ft.Page):
                 ft.dropdown.Option("claude-3-sonnet"),
                 ft.dropdown.Option("other")
             ],
-            value=ai_chat.external_ai_model,
-            tooltip="Выберите модель внешнего ИИ:\n\n"
+            value=ai_chat.external_ai_calculations_model,
+            tooltip="Выберите модель внешнего ИИ для расчетов:\n\n"
             "• gpt-3.5-turbo - Быстрая и экономичная модель OpenAI\n"
             "• gpt-4 - Более мощная модель OpenAI с лучшим пониманием\n"
             "• gpt-4-turbo - Самая современная модель OpenAI\n"
@@ -408,11 +408,33 @@ def main(page: ft.Page):
             "• other - Другая модель (укажите в настройках API)"
         )
         
-        # Поля настроек для локального ИИ
-        enable_local_ai = ft.Checkbox(label="Включить локальный ИИ (LM Studio)", value=ai_chat.enable_local_ai)
-        local_base_url_field = ft.TextField(label="URL сервера LM Studio", value=ai_chat.local_ai_base_url)
-        local_model_field = ft.Dropdown(
-            label="Модель локального ИИ",
+        # Поля настроек для внешнего ИИ (паттерны)
+        enable_external_ai_pattern = ft.Checkbox(label="Включить внешний ИИ для анализа паттернов", value=ai_chat.enable_external_ai_patterns)
+        external_pattern_api_key_field = ft.TextField(label="API ключ внешнего ИИ для анализа паттернов", value=ai_chat.external_ai_patterns_api_key, password=True)
+        external_pattern_base_url_field = ft.TextField(label="Базовый URL внешнего ИИ для анализа паттернов", value=ai_chat.external_ai_patterns_base_url)
+        external_pattern_model_field = ft.Dropdown(
+            label="Модель внешнего ИИ для анализа паттернов",
+            options=[
+                ft.dropdown.Option("gpt-4"),
+                ft.dropdown.Option("gpt-4-turbo"),
+                ft.dropdown.Option("claude-3-sonnet"),
+                ft.dropdown.Option("claude-3-opus"),
+                ft.dropdown.Option("other")
+            ],
+            value=ai_chat.external_ai_patterns_model,
+            tooltip="Выберите модель внешнего ИИ для анализа паттернов:\n\n"
+            "• gpt-4 - Мощная модель OpenAI для анализа\n"
+            "• gpt-4-turbo - Самая современная модель OpenAI\n"
+            "• claude-3-sonnet - Сбалансированная модель Anthropic\n"
+            "• claude-3-opus - Самая мощная модель Anthropic\n"
+            "• other - Другая модель (укажите в настройках API)"
+        )
+        
+        # Поля настроек для локального ИИ (расчеты)
+        enable_local_ai_calc = ft.Checkbox(label="Включить локальный ИИ для расчетов (LM Studio)", value=ai_chat.enable_local_ai_calculations)
+        local_calc_base_url_field = ft.TextField(label="URL сервера LM Studio для расчетов", value=ai_chat.local_ai_calculations_base_url)
+        local_calc_model_field = ft.Dropdown(
+            label="Модель локального ИИ для расчетов",
             options=[
                 ft.dropdown.Option("gpt-3.5-turbo"),
                 ft.dropdown.Option("gpt-4"),
@@ -422,8 +444,8 @@ def main(page: ft.Page):
                 ft.dropdown.Option("mistral"),
                 ft.dropdown.Option("other")
             ],
-            value=ai_chat.local_ai_model,
-            tooltip="Выберите модель локального ИИ:\n\n"
+            value=ai_chat.local_ai_calculations_model,
+            tooltip="Выберите модель локального ИИ для расчетов:\n\n"
             "• gpt-3.5-turbo - Совместимая модель OpenAI\n"
             "• gpt-4 - Совместимая модель OpenAI\n"
             "• llama3 - Модель Meta (рекомендуется для русского языка)\n"
@@ -437,11 +459,36 @@ def main(page: ft.Page):
             "• Для 32+ ГБ RAM: llama3-70b или mistral-large"
         )
         
-        # Поля настроек для OpenRouter
-        enable_openrouter = ft.Checkbox(label="Включить OpenRouter", value=ai_chat.enable_openrouter)
-        openrouter_api_key_field = ft.TextField(label="API ключ OpenRouter", value=ai_chat.openrouter_api_key, password=True)
-        openrouter_model_field = ft.Dropdown(
-            label="Модель OpenRouter",
+        # Поля настроек для локального ИИ (паттерны)
+        enable_local_ai_pattern = ft.Checkbox(label="Включить локальный ИИ для анализа паттернов (LM Studio)", value=ai_chat.enable_local_ai_patterns)
+        local_pattern_base_url_field = ft.TextField(label="URL сервера LM Studio для анализа паттернов", value=ai_chat.local_ai_patterns_base_url)
+        local_pattern_model_field = ft.Dropdown(
+            label="Модель локального ИИ для анализа паттернов",
+            options=[
+                ft.dropdown.Option("llama3"),
+                ft.dropdown.Option("qwen"),
+                ft.dropdown.Option("gemma"),
+                ft.dropdown.Option("mistral"),
+                ft.dropdown.Option("other")
+            ],
+            value=ai_chat.local_ai_patterns_model,
+            tooltip="Выберите модель локального ИИ для анализа паттернов:\n\n"
+            "• llama3 - Модель Meta (рекомендуется для русского языка)\n"
+            "• qwen - Модель Alibaba с отличной поддержкой русского языка\n"
+            "• gemma - Модель Google\n"
+            "• mistral - Модель Mistral AI\n"
+            "• other - Другая модель (укажите в настройках LM Studio)\n\n"
+            "Рекомендации:\n"
+            "• Для 8 ГБ RAM: qwen-4b или gemma-4b\n"
+            "• Для 16 ГБ RAM: llama3-8b или qwen-8b\n"
+            "• Для 32+ ГБ RAM: llama3-70b или mistral-large"
+        )
+        
+        # Поля настроек для OpenRouter (расчеты)
+        enable_openrouter_calc = ft.Checkbox(label="Включить OpenRouter для расчетов", value=ai_chat.enable_openrouter_calculations)
+        openrouter_calc_api_key_field = ft.TextField(label="API ключ OpenRouter для расчетов", value=ai_chat.openrouter_calculations_api_key, password=True)
+        openrouter_calc_model_field = ft.Dropdown(
+            label="Модель OpenRouter для расчетов",
             options=[
                 ft.dropdown.Option("openai/gpt-3.5-turbo"),
                 ft.dropdown.Option("openai/gpt-4"),
@@ -453,8 +500,13 @@ def main(page: ft.Page):
                 ft.dropdown.Option("mistralai/mistral-7b-instruct"),
                 ft.dropdown.Option("other")
             ],
-            value=ai_chat.openrouter_model,
-            tooltip="Выберите модель OpenRouter:\n\n"
+            value=ai_chat.openrouter_calculations_model,
+            tooltip="Выберите модель OpenRouter для расчетов:\n\n"
+            "БЕСПЛАТНЫЕ МОДЕЛИ:\n"
+            "• mistralai/mistral-7b-instruct - Бесплатная модель Mistral AI\n"
+            "• nousresearch/nous-capybara-7b - Бесплатная модель\n"
+            "• openchat/openchat-7b - Бесплатная модель\n\n"
+            "ПЛАТНЫЕ МОДЕЛИ:\n"
             "• openai/gpt-3.5-turbo - Быстрая и экономичная модель OpenAI\n"
             "• openai/gpt-4 - Более мощная модель OpenAI\n"
             "• openai/gpt-4-turbo - Самая современная модель OpenAI\n"
@@ -462,8 +514,39 @@ def main(page: ft.Page):
             "• anthropic/claude-3-sonnet - Сбалансированная модель Anthropic\n"
             "• google/gemini-pro - Модель Google\n"
             "• meta-llama/llama-3-8b-instruct - Модель Meta\n"
-            "• mistralai/mistral-7b-instruct - Модель Mistral AI\n"
             "• other - Другая модель из каталога OpenRouter\n\n"
+            "Преимущества OpenRouter:\n"
+            "• Доступ к 400+ моделям через единый API\n"
+            "• Конкуренция цен между провайдерами\n"
+            "• Автоматическое распределение нагрузки\n"
+            "• Отказоустойчивость"
+        )
+        
+        # Поля настроек для OpenRouter (паттерны)
+        enable_openrouter_pattern = ft.Checkbox(label="Включить OpenRouter для анализа паттернов", value=ai_chat.enable_openrouter_patterns)
+        openrouter_pattern_api_key_field = ft.TextField(label="API ключ OpenRouter для анализа паттернов", value=ai_chat.openrouter_patterns_api_key, password=True)
+        openrouter_pattern_model_field = ft.Dropdown(
+            label="Модель OpenRouter для анализа паттернов",
+            options=[
+                ft.dropdown.Option("anthropic/claude-3-sonnet"),
+                ft.dropdown.Option("anthropic/claude-3-opus"),
+                ft.dropdown.Option("openai/gpt-4"),
+                ft.dropdown.Option("openai/gpt-4-turbo"),
+                ft.dropdown.Option("google/gemini-pro"),
+                ft.dropdown.Option("meta-llama/llama-3-70b-instruct"),
+                ft.dropdown.Option("mistralai/mixtral-8x7b-instruct"),
+                ft.dropdown.Option("other")
+            ],
+            value=ai_chat.openrouter_patterns_model,
+            tooltip="Выберите модель OpenRouter для анализа паттернов:\n\n"
+            "МОЩНЫЕ МОДЕЛИ:\n"
+            "• anthropic/claude-3-sonnet - Сбалансированная модель Anthropic\n"
+            "• anthropic/claude-3-opus - Самая мощная модель Anthropic\n"
+            "• openai/gpt-4 - Мощная модель OpenAI\n"
+            "• openai/gpt-4-turbo - Самая современная модель OpenAI\n"
+            "• google/gemini-pro - Модель Google\n"
+            "• meta-llama/llama-3-70b-instruct - Модель Meta\n"
+            "• mistralai/mixtral-8x7b-instruct - Модель Mistral AI\n\n"
             "Преимущества OpenRouter:\n"
             "• Доступ к 400+ моделям через единый API\n"
             "• Конкуренция цен между провайдерами\n"
@@ -474,16 +557,51 @@ def main(page: ft.Page):
         def save_settings(e):
             """Сохраняет настройки ИИ чата"""
             settings = {
-                'enable_external_ai': enable_external_ai.value,
-                'external_ai_api_key': external_api_key_field.value,
-                'external_ai_model': external_model_field.value,
-                'external_ai_base_url': external_base_url_field.value,
-                'enable_local_ai': enable_local_ai.value,
-                'local_ai_model': local_model_field.value,
-                'local_ai_base_url': local_base_url_field.value,
-                'enable_openrouter': enable_openrouter.value,
-                'openrouter_api_key': openrouter_api_key_field.value,
-                'openrouter_model': openrouter_model_field.value
+                # Внешний ИИ для расчетов
+                'enable_external_ai_calculations': enable_external_ai_calc.value,
+                'external_ai_calculations_api_key': external_calc_api_key_field.value,
+                'external_ai_calculations_model': external_calc_model_field.value,
+                'external_ai_calculations_base_url': external_calc_base_url_field.value,
+                
+                # Внешний ИИ для анализа паттернов
+                'enable_external_ai_patterns': enable_external_ai_pattern.value,
+                'external_ai_patterns_api_key': external_pattern_api_key_field.value,
+                'external_ai_patterns_model': external_pattern_model_field.value,
+                'external_ai_patterns_base_url': external_pattern_base_url_field.value,
+                
+                # Локальный ИИ для расчетов
+                'enable_local_ai_calculations': enable_local_ai_calc.value,
+                'local_ai_calculations_model': local_calc_model_field.value,
+                'local_ai_calculations_base_url': local_calc_base_url_field.value,
+                
+                # Локальный ИИ для анализа паттернов
+                'enable_local_ai_patterns': enable_local_ai_pattern.value,
+                'local_ai_patterns_model': local_pattern_model_field.value,
+                'local_ai_patterns_base_url': local_pattern_base_url_field.value,
+                
+                # OpenRouter для расчетов
+                'enable_openrouter_calculations': enable_openrouter_calc.value,
+                'openrouter_calculations_api_key': openrouter_calc_api_key_field.value,
+                'openrouter_calculations_model': openrouter_calc_model_field.value,
+                
+                # OpenRouter для анализа паттернов
+                'enable_openrouter_patterns': enable_openrouter_pattern.value,
+                'openrouter_patterns_api_key': openrouter_pattern_api_key_field.value,
+                'openrouter_patterns_model': openrouter_pattern_model_field.value,
+                
+                # Устаревшие настройки (сохранены для совместимости)
+                'enable_external_ai': enable_external_ai_calc.value,  # Используем те же значения для совместимости
+                'external_ai_api_key': external_calc_api_key_field.value,
+                'external_ai_model': external_calc_model_field.value,
+                'external_ai_base_url': external_calc_base_url_field.value,
+                
+                'enable_local_ai': enable_local_ai_calc.value,  # Используем те же значения для совместимости
+                'local_ai_model': local_calc_model_field.value,
+                'local_ai_base_url': local_calc_base_url_field.value,
+                
+                'enable_openrouter': enable_openrouter_calc.value,  # Используем те же значения для совместимости
+                'openrouter_api_key': openrouter_calc_api_key_field.value,
+                'openrouter_model': openrouter_calc_model_field.value,
             }
             ai_chat.update_settings(settings)
             page.dialog.open = False
@@ -491,27 +609,51 @@ def main(page: ft.Page):
             show_snackbar("Настройки ИИ сохранены", Colors.GREEN_500)
         
         # Создаем вкладки для разных типов ИИ
-        external_tab = ft.Column([
-            enable_external_ai,
-            external_api_key_field,
-            external_base_url_field,
-            external_model_field,
+        external_calc_tab = ft.Column([
+            enable_external_ai_calc,
+            external_calc_api_key_field,
+            external_calc_base_url_field,
+            external_calc_model_field,
             ft.Text("Примечание: Для использования внешних ИИ сервисов необходимо иметь действующий API ключ.", size=12, color=Colors.GREY_600)
         ], spacing=10)
         
-        local_tab = ft.Column([
-            enable_local_ai,
-            local_base_url_field,
-            local_model_field,
+        external_pattern_tab = ft.Column([
+            enable_external_ai_pattern,
+            external_pattern_api_key_field,
+            external_pattern_base_url_field,
+            external_pattern_model_field,
+            ft.Text("Примечание: Для анализа паттернов рекомендуются более мощные модели ИИ.", size=12, color=Colors.GREY_600)
+        ], spacing=10)
+        
+        local_calc_tab = ft.Column([
+            enable_local_ai_calc,
+            local_calc_base_url_field,
+            local_calc_model_field,
             ft.Text("Примечание: Для использования локального ИИ необходимо установить LM Studio и запустить сервер с моделью.", size=12, color=Colors.GREY_600),
             ft.Text("По умолчанию: http://localhost:1234/v1", size=12, color=Colors.GREY_600)
         ], spacing=10)
         
-        openrouter_tab = ft.Column([
-            enable_openrouter,
-            openrouter_api_key_field,
-            openrouter_model_field,
+        local_pattern_tab = ft.Column([
+            enable_local_ai_pattern,
+            local_pattern_base_url_field,
+            local_pattern_model_field,
+            ft.Text("Примечание: Для анализа паттернов рекомендуются мощные модели ИИ.", size=12, color=Colors.GREY_600),
+            ft.Text("По умолчанию: http://localhost:1235/v1", size=12, color=Colors.GREY_600)
+        ], spacing=10)
+        
+        openrouter_calc_tab = ft.Column([
+            enable_openrouter_calc,
+            openrouter_calc_api_key_field,
+            openrouter_calc_model_field,
             ft.Text("Примечание: OpenRouter предоставляет доступ к более чем 400 моделям ИИ через единый API.", size=12, color=Colors.GREY_600),
+            ft.Text("Получите API ключ на https://openrouter.ai", size=12, color=Colors.GREY_600)
+        ], spacing=10)
+        
+        openrouter_pattern_tab = ft.Column([
+            enable_openrouter_pattern,
+            openrouter_pattern_api_key_field,
+            openrouter_pattern_model_field,
+            ft.Text("Примечание: Для анализа паттернов рекомендуются мощные модели ИИ.", size=12, color=Colors.GREY_600),
             ft.Text("Получите API ключ на https://openrouter.ai", size=12, color=Colors.GREY_600)
         ], spacing=10)
         
@@ -528,23 +670,44 @@ def main(page: ft.Page):
                     ),
                 ),
                 ft.Tab(
-                    text="Внешний ИИ",
+                    text="Внешний ИИ (Расчеты)",
                     content=ft.Container(
-                        content=external_tab,
+                        content=external_calc_tab,
                         padding=20
                     ),
                 ),
                 ft.Tab(
-                    text="Локальный ИИ",
+                    text="Внешний ИИ (Паттерны)",
                     content=ft.Container(
-                        content=local_tab,
+                        content=external_pattern_tab,
                         padding=20
                     ),
                 ),
                 ft.Tab(
-                    text="OpenRouter",
+                    text="Локальный ИИ (Расчеты)",
                     content=ft.Container(
-                        content=openrouter_tab,
+                        content=local_calc_tab,
+                        padding=20
+                    ),
+                ),
+                ft.Tab(
+                    text="Локальный ИИ (Паттерны)",
+                    content=ft.Container(
+                        content=local_pattern_tab,
+                        padding=20
+                    ),
+                ),
+                ft.Tab(
+                    text="OpenRouter (Расчеты)",
+                    content=ft.Container(
+                        content=openrouter_calc_tab,
+                        padding=20
+                    ),
+                ),
+                ft.Tab(
+                    text="OpenRouter (Паттерны)",
+                    content=ft.Container(
+                        content=openrouter_pattern_tab,
                         padding=20
                     ),
                 ),
