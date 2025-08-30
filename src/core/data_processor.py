@@ -9,6 +9,13 @@
 
 import pandas as pd
 from typing import Dict, List, Any, Optional
+import sys
+import os
+
+# Add the src directory to the path so we can import modules
+src_path = os.path.join(os.path.dirname(__file__), '..')
+if src_path not in sys.path:
+    sys.path.insert(0, src_path)
 
 from logger_config import log
 from core.data_models import NomenclatureRow
@@ -60,16 +67,54 @@ class DataProcessor:
         errors = []
         use_adaptive = self.config.get('use_adaptive_model', False)
         
-        for _, row_data in dataset.iterrows():
+        # Последовательная обработка каждой строки данных
+        for index, row_data in dataset.iterrows():
             try:
-                validated_data = NomenclatureRow.model_validate(row_data.to_dict())
+                # Этап 1: Валидация данных
+                validated_data = self._validate_row_data(row_data)
+                if validated_data is None:
+                    # Если валидация не прошла, добавляем в ошибки
+                    error_reason = self._determine_error_reason(row_data)
+                    error_info = {
+                        'Номенклатура': row_data.get('Номенклатура', f'Строка {index}'),
+                        'Причина': error_reason,
+                        'Ошибка': 'Ошибка валидации данных',
+                        'Данные': {
+                            'Начальный_остаток': row_data.get('Начальный_остаток', 'N/A'),
+                            'Приход': row_data.get('Приход', 'N/A'),
+                            'Расход': row_data.get('Расход', 'N/A'),
+                            'Конечный_остаток': row_data.get('Конечный_остаток', 'N/A')
+                        }
+                    }
+                    errors.append(error_info)
+                    log.warning(f"Строка не прошла валидацию: {row_data.get('Номенклатура', f'Строка {index}')}. Причина: {error_reason}")
+                    continue
+                
                 row = validated_data.model_dump(by_alias=True)
+                
+                # Этап 2: Подготовка данных для расчета
+                nomenclature = row['Номенклатура']
+                data_for_calc = self._prepare_calculation_data(row)
+                
+                # Этап 3: Анализ недостач из инвентаризации
+                deviation_info = self._analyze_inventory_shortage(data_for_calc, nomenclature)
+                if deviation_info and abs(deviation_info['Отклонение']) > 0.001:
+                    errors.append(deviation_info)
+                    log.info(f"Значимое отклонение для {nomenclature}: {deviation_info['Отклонение']}")
+                
+                # Этап 4: Расчет коэффициентов
+                if use_adaptive:
+                    result = self._calculate_with_adaptive_model(data_for_calc, nomenclature, surplus_rates)
+                else:
+                    result = self._calculate_with_basic_model(data_for_calc, nomenclature)
+                
+                results.append(result)
+                
             except Exception as e:
-                # Определяем причину ошибки
-                error_reason = self._determine_error_reason(row_data)
+                # Обработка непредвиденных ошибок
                 error_info = {
-                    'Номенклатура': row_data.get('Номенклатура', 'N/A'),
-                    'Причина': error_reason,
+                    'Номенклатура': row_data.get('Номенклатура', f'Строка {index}'),
+                    'Причина': 'Непредвиденная ошибка обработки',
                     'Ошибка': str(e),
                     'Данные': {
                         'Начальный_остаток': row_data.get('Начальный_остаток', 'N/A'),
@@ -79,81 +124,80 @@ class DataProcessor:
                     }
                 }
                 errors.append(error_info)
-                log.warning(f"Строка не прошла валидацию: {row_data.get('Номенклатура', 'N/A')}. Причина: {error_reason}. Ошибка: {e}")
+                log.error(f"Ошибка при обработке строки {index} ({row_data.get('Номенклатура', 'N/A')}): {e}")
                 continue
-
-            nomenclature = row['Номенклатура']
-            data_for_calc = {
-                'initial_balance': row['Начальный_остаток'],
-                'incoming': row['Приход'],
-                'outgoing': row['Расход'],
-                'final_balance': row['Конечный_остаток'],
-                'storage_days': row['Период_хранения_дней']
-            }
-
-            # Анализируем недостачи из данных инвентаризации
-            # Документы инвентаризации содержат информацию о недостачах, 
-            # система анализирует их для определения части, связанной с усушкой
-            theoretical_balance = data_for_calc['initial_balance'] + data_for_calc['incoming'] - data_for_calc['outgoing']
-            inventory_shortage = theoretical_balance - data_for_calc['final_balance']
-            
-            # Добавляем информацию об отклонении для всех записей
-            # Система анализирует недостачи для определения части, связанной с усушкой
-            # Это ключевой момент: система НЕ рассчитывает усушку по балансам, 
-            # а анализирует уже имеющиеся данные о недостачах из инвентаризаций
-            deviation_info = {
-                'Номенклатура': nomenclature,
-                'Причина': 'Анализ недостач из инвентаризации',
-                'Отклонение': inventory_shortage,
-                'Данные': {
-                    'Начальный_остаток': data_for_calc['initial_balance'],
-                    'Приход': data_for_calc['incoming'],
-                    'Расход': data_for_calc['outgoing'],
-                    'Теоретический_остаток': theoretical_balance,
-                    'Фактический_остаток': data_for_calc['final_balance']
-                }
-            }
-            
-            # Помечаем как ошибку только значимые отклонения (больше 0.001 по модулю)
-            if abs(inventory_shortage) > 0.001:
-                errors.append(deviation_info)
-                log.info(f"Значимое отклонение для {nomenclature}: {inventory_shortage}")
-            # else:
-            #     log.info(f"Нулевая усушка для {nomenclature}: отклонение {inventory_shortage}")
-
-            if use_adaptive:
-                surplus_rate = surplus_rates.get(nomenclature, self.config.get('average_surplus_rate', 0.0))
-                # Убедимся, что модель использует актуальный процент излишка
-                self.adaptive_model.set_surplus_rate(surplus_rate, nomenclature)
-                
-                coefficients = self.adaptive_model.adapt_coefficients(data_for_calc, nomenclature=nomenclature)
-                # ИСПРАВЛЕНИЕ: Передаем surplus_rate в функцию расчета точности
-                accuracy = self._calculate_accuracy(data_for_calc, coefficients, surplus_rate)
-                result = {
-                    'Номенклатура': nomenclature, 'a': coefficients['a'], 'b': coefficients['b'], 'c': coefficients['c'],
-                    'Точность': accuracy, 'Модель': 'adaptive_exponential', 'Дней_хранения': data_for_calc['storage_days']
-                }
-                if surplus_rate > 0:
-                    result['Учет_излишка'] = f"{surplus_rate*100:.1f}%"
-            else:
-                calc_input = data_for_calc.copy()
-                calc_input['name'] = nomenclature
-                coefficients = self.calculator.calculate_coefficients(calc_input)
-                # ИСПРАВЛЕНИЕ: Унифицируем ключи для базовой модели
-                result = {
-                    'Номенклатура': nomenclature, 
-                    'a': coefficients['a'], 
-                    'b': coefficients['b'], 
-                    'c': coefficients.get('c', 0),  # Некоторые модели могут не возвращать 'c'
-                    'Точность': coefficients['accuracy'], 
-                    'Модель': coefficients.get('model_type', 'exponential'), 
-                    'Дней_хранения': data_for_calc['storage_days']
-                }
-            results.append(result)
         
         return {
             'coefficients': results,
             'errors': errors
+        }
+
+    def _validate_row_data(self, row_data: pd.Series) -> Optional[NomenclatureRow]:
+        """Валидирует данные строки."""
+        try:
+            return NomenclatureRow.model_validate(row_data.to_dict())
+        except Exception:
+            return None
+
+    def _prepare_calculation_data(self, row: Dict[str, Any]) -> Dict[str, float]:
+        """Подготавливает данные для расчета."""
+        return {
+            'initial_balance': row['Начальный_остаток'],
+            'incoming': row['Приход'],
+            'outgoing': row['Расход'],
+            'final_balance': row['Конечный_остаток'],
+            'storage_days': row['Период_хранения_дней']
+        }
+
+    def _analyze_inventory_shortage(self, data: Dict[str, float], nomenclature: str) -> Dict[str, Any]:
+        """Анализирует недостачи из данных инвентаризации."""
+        theoretical_balance = data['initial_balance'] + data['incoming'] - data['outgoing']
+        inventory_shortage = theoretical_balance - data['final_balance']
+        
+        return {
+            'Номенклатура': nomenclature,
+            'Причина': 'Анализ недостач из инвентаризации',
+            'Отклонение': inventory_shortage,
+            'Данные': {
+                'Начальный_остаток': data['initial_balance'],
+                'Приход': data['incoming'],
+                'Расход': data['outgoing'],
+                'Теоретический_остаток': theoretical_balance,
+                'Фактический_остаток': data['final_balance']
+            }
+        }
+
+    def _calculate_with_adaptive_model(self, data: Dict[str, float], nomenclature: str, surplus_rates: Dict[str, float]) -> Dict[str, Any]:
+        """Выполняет расчет с использованием адаптивной модели."""
+        surplus_rate = surplus_rates.get(nomenclature, self.config.get('average_surplus_rate', 0.0))
+        # Убедимся, что модель использует актуальный процент излишка
+        self.adaptive_model.set_surplus_rate(surplus_rate, nomenclature)
+        
+        coefficients = self.adaptive_model.adapt_coefficients(data, nomenclature=nomenclature)
+        # ИСПРАВЛЕНИЕ: Передаем surplus_rate в функцию расчета точности
+        accuracy = self._calculate_accuracy(data, coefficients, surplus_rate)
+        result = {
+            'Номенклатура': nomenclature, 'a': coefficients['a'], 'b': coefficients['b'], 'c': coefficients['c'],
+            'Точность': accuracy, 'Модель': 'adaptive_exponential', 'Дней_хранения': data['storage_days']
+        }
+        if surplus_rate > 0:
+            result['Учет_излишка'] = f"{surplus_rate*100:.1f}%"
+        return result
+
+    def _calculate_with_basic_model(self, data: Dict[str, float], nomenclature: str) -> Dict[str, Any]:
+        """Выполняет расчет с использованием базовой модели."""
+        calc_input = data.copy()
+        calc_input['name'] = nomenclature
+        coefficients = self.calculator.calculate_coefficients(calc_input)
+        # ИСПРАВЛЕНИЕ: Унифицируем ключи для базовой модели
+        return {
+            'Номенклатура': nomenclature, 
+            'a': coefficients['a'], 
+            'b': coefficients['b'], 
+            'c': coefficients.get('c', 0),  # Некоторые модели могут не возвращать 'c'
+            'Точность': coefficients['accuracy'], 
+            'Модель': coefficients.get('model_type', 'exponential'), 
+            'Дней_хранения': data['storage_days']
         }
 
     def _determine_error_reason(self, row_data: pd.Series) -> str:

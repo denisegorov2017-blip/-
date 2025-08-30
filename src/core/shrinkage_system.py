@@ -228,22 +228,24 @@ class ShrinkageSystem:
             log.info("Используется адаптивная модель расчета.")
         
         try:
+            # Этап 1: Проверка входных данных
             if dataset.empty:
                 log.warning("Входной датасет пуст. Расчет невозможен.")
-                return {'status': 'error', 'message': 'Входной датасет пуст'}
+                return self._create_error_response('Входной датасет пуст')
 
-            # Проверяем наличие начальной и конечной инвентаризации
+            # Этап 2: Проверяем наличие начальной и конечной инвентаризации
+            log.info("Этап 1/4: Проверка наличия инвентаризационных данных...")
             processed_dataset = self._check_inventory_availability(dataset, source_filename)
             
-            # 1. Расчет коэффициентов
-            log.info(f"Этап 1: Расчет коэффициентов для {len(processed_dataset)} позиций...")
+            # Этап 3: Расчет коэффициентов
+            log.info(f"Этап 2/4: Расчет коэффициентов для {len(processed_dataset)} позиций...")
             processing_results = self.data_processor.calculate_coefficients(processed_dataset, self.surplus_rates)
             coefficients_results = processing_results['coefficients']
             error_results = processing_results['errors']
             
-            # 2. Сохраняем результаты в базу данных (если интеграция доступна)
+            # Этап 4: Сохраняем результаты в базу данных (если интеграция доступна)
             if DATABASE_INTEGRATION_AVAILABLE and self.config.get('enable_database', False):
-                log.info("Этап 2a: Сохранение результатов в базу данных...")
+                log.info("Этап 3/4: Сохранение результатов в базу данных...")
                 try:
                     save_calculation_results(
                         source_filename=source_filename,
@@ -253,25 +255,42 @@ class ShrinkageSystem:
                     )
                     log.success("Результаты успешно сохранены в базу данных")
                 except Exception as e:
-                    log.error(f"Ошибка при сохранении результатов в базу данных: {e}")
+                    error_msg = f"Ошибка при сохранении результатов в базу данных: {e}"
+                    log.error(error_msg)
+                    error_results.append({
+                        'Номенклатура': 'Система',
+                        'Причина': 'Ошибка сохранения в БД',
+                        'Ошибка': error_msg
+                    })
             
-            # 3. Генерация отчетов и сводки
-            log.info("Этап 2b: Генерация отчетов и сводки...")
-            report_data = self.report_generator.generate(
-                coefficients_results, 
-                source_filename,
-                errors=error_results
-            )
+            # Этап 5: Генерация отчетов и сводки
+            log.info("Этап 4/4: Генерация отчетов и сводки...")
+            try:
+                report_data = self.report_generator.generate(
+                    coefficients_results, 
+                    source_filename,
+                    errors=error_results
+                )
+            except Exception as e:
+                error_msg = f"Ошибка при генерации отчетов: {e}"
+                log.error(error_msg)
+                return self._create_error_response(error_msg)
             
-            # 4. Генерация расширенных аналитических отчетов (если доступно)
+            # Этап 6: Генерация расширенных аналитических отчетов (если доступно)
             advanced_reports = {}
             if ADVANCED_ANALYTICS_AVAILABLE and self.config.get('enable_database', False):
-                log.info("Этап 2c: Генерация расширенных аналитических отчетов...")
+                log.info("Генерация расширенных аналитических отчетов...")
                 try:
                     advanced_reports = self.advanced_analytics_reporter.generate_comprehensive_analytics_report()
                     log.success("Расширенные аналитические отчеты успешно сгенерированы")
                 except Exception as e:
-                    log.error(f"Ошибка при генерации расширенных аналитических отчетов: {e}")
+                    error_msg = f"Ошибка при генерации расширенных аналитических отчетов: {e}"
+                    log.error(error_msg)
+                    error_results.append({
+                        'Номенклатура': 'Система',
+                        'Причина': 'Ошибка генерации аналитики',
+                        'Ошибка': error_msg
+                    })
             
             log.success(f"Обработка завершена. Средняя точность: {report_data['summary']['avg_accuracy']:.1f}%")
             
@@ -287,5 +306,20 @@ class ShrinkageSystem:
             }
             
         except Exception as e:
-            log.exception("Критическая ошибка в process_dataset (оркестратор)")
-            return {'status': 'error', 'message': str(e)}
+            error_msg = f"Критическая ошибка в process_dataset (оркестратор): {e}"
+            log.exception(error_msg)
+            return self._create_error_response(error_msg)
+    
+    def _create_error_response(self, message: str) -> Dict[str, Any]:
+        """Создает стандартный ответ об ошибке."""
+        return {
+            'status': 'error',
+            'message': message,
+            'coefficients': [],
+            'errors': [{'Номенклатура': 'Система', 'Причина': 'Критическая ошибка', 'Ошибка': message}],
+            'preliminary': [],
+            'reports': {},
+            'summary': {'total_positions': 0, 'avg_accuracy': 0, 'error_count': 1},
+            'advanced_reports': {},
+            'source_file': ''
+        }

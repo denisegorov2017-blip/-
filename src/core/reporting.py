@@ -64,66 +64,89 @@ class ReportGenerator:
             
         output_dir = self.config.get('output_dir', 'результаты')
         
-        # Определяем, является ли это тестовыми данными
+        # Этап 1: Определяем целевую директорию
         is_test_data = self._is_test_data(source_filename)
         target_dir = self.test_data_manager.test_subdir if is_test_data else output_dir
         
+        # Этап 2: Генерируем отчеты
         log.info("Генерация HTML отчетов...")
-        reports = self._generate_reports(coefficients, preliminary, errors, target_dir, source_filename)
+        reports = self._generate_reports_sequentially(coefficients, preliminary, errors, target_dir, source_filename)
         
+        # Этап 3: Генерируем сводную статистику
         log.info("Генерация сводной статистики...")
-        summary = self._generate_summary(coefficients, preliminary, errors)
+        summary = self._generate_summary_sequentially(coefficients, preliminary, errors)
         
         return {
             'reports': reports,
             'summary': summary
         }
 
-    def _generate_reports(self, 
-                          coefficients: List[Dict[str, Any]], 
-                          preliminary: List[Dict[str, Any]],
-                          errors: List[Dict[str, Any]],
-                          output_dir: str, 
-                          source_filename: str) -> Dict[str, str]:
-        """Генерирует HTML отчеты."""
-        os.makedirs(output_dir, exist_ok=True)
-        base_name = Path(source_filename).stem
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        reports = {}
-        
-        if coefficients:
-            coefficients_path = os.path.join(output_dir, f"коэффициенты_усушки_{base_name}_{timestamp}.html")
-            self.reporter.generate_coefficients_report(coefficients, coefficients_path, "Коэффициенты усушки (автоматический расчет)")
-            reports['coefficients'] = coefficients_path
-        
-        # Генерируем отчет об ошибках, если есть
-        if errors:
-            errors_path = os.path.join(output_dir, f"ошибки_расчета_{base_name}_{timestamp}.html")
-            self.reporter.generate_errors_report(errors, errors_path, "Ошибки расчета усушки")
-            reports['errors'] = errors_path
+    def _generate_reports_sequentially(self, 
+                                      coefficients: List[Dict[str, Any]], 
+                                      preliminary: List[Dict[str, Any]],
+                                      errors: List[Dict[str, Any]],
+                                      output_dir: str, 
+                                      source_filename: str) -> Dict[str, str]:
+        """Генерирует HTML отчеты последовательно."""
+        try:
+            os.makedirs(output_dir, exist_ok=True)
+            base_name = Path(source_filename).stem
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            reports = {}
             
-        # Логика для предварительных отчетов, если она будет возвращена
-        # if preliminary:
-        #     preliminary_path = os.path.join(output_dir, f"предварительный_расчет_{base_name}_{timestamp}.html")
-        #     # self.reporter.generate_preliminary_report(preliminary, preliminary_path, "Предварительный расчет усушки")
-        #     reports['preliminary'] = preliminary_path
+            # Генерируем отчет по коэффициентам
+            if coefficients:
+                coefficients_path = os.path.join(output_dir, f"коэффициенты_усушки_{base_name}_{timestamp}.html")
+                self.reporter.generate_coefficients_report(coefficients, coefficients_path, "Коэффициенты усушки (автоматический расчет)")
+                reports['coefficients'] = coefficients_path
+                log.info(f"Отчет по коэффициентам сохранен: {coefficients_path}")
             
-        return reports
+            # Генерируем отчет об ошибках, если есть
+            if errors:
+                errors_path = os.path.join(output_dir, f"ошибки_расчета_{base_name}_{timestamp}.html")
+                self.reporter.generate_errors_report(errors, errors_path, "Ошибки расчета усушки")
+                reports['errors'] = errors_path
+                log.info(f"Отчет об ошибках сохранен: {errors_path}")
+                
+            # Логика для предварительных отчетов, если она будет возвращена
+            # if preliminary:
+            #     preliminary_path = os.path.join(output_dir, f"предварительный_расчет_{base_name}_{timestamp}.html")
+            #     # self.reporter.generate_preliminary_report(preliminary, preliminary_path, "Предварительный расчет усушки")
+            #     reports['preliminary'] = preliminary_path
+            #     log.info(f"Предварительный отчет сохранен: {preliminary_path}")
+                
+            return reports
+        except Exception as e:
+            log.error(f"Ошибка при генерации отчетов: {e}")
+            raise
 
-    def _generate_summary(self, 
-                          coefficients: List[Dict[str, Any]], 
-                          preliminary: List[Dict[str, Any]],
-                          errors: List[Dict[str, Any]]) -> Dict[str, Any]:
-        """Генерирует сводную статистику."""
-        if not coefficients:
-            return {'total_positions': 0, 'avg_accuracy': 0, 'error_count': len(errors)}
-        
-        accuracies = [r.get('Точность', 0) for r in coefficients if r.get('Точность', 0) > 0]
-        return {
-            'total_positions': len(coefficients),
-            'avg_accuracy': sum(accuracies) / len(accuracies) if accuracies else 0,
-            'error_count': len(errors)
-        }
+    def _generate_summary_sequentially(self, 
+                                       coefficients: List[Dict[str, Any]], 
+                                       preliminary: List[Dict[str, Any]],
+                                       errors: List[Dict[str, Any]]) -> Dict[str, Any]:
+        """Генерирует сводную статистику последовательно."""
+        try:
+            if not coefficients:
+                log.warning("Нет коэффициентов для генерации сводки")
+                return {'total_positions': 0, 'avg_accuracy': 0, 'error_count': len(errors)}
+            
+            # Вычисляем точности
+            accuracies = [r.get('Точность', 0) for r in coefficients if r.get('Точность', 0) > 0]
+            
+            # Вычисляем среднюю точность
+            avg_accuracy = sum(accuracies) / len(accuracies) if accuracies else 0
+            
+            summary = {
+                'total_positions': len(coefficients),
+                'avg_accuracy': avg_accuracy,
+                'error_count': len(errors)
+            }
+            
+            log.info(f"Сводка сгенерирована: {summary['total_positions']} позиций, средняя точность {summary['avg_accuracy']:.2f}%")
+            return summary
+        except Exception as e:
+            log.error(f"Ошибка при генерации сводки: {e}")
+            return {'total_positions': 0, 'avg_accuracy': 0, 'error_count': len(errors) if errors else 0}
     
     def _is_test_data(self, source_filename: str) -> bool:
         """

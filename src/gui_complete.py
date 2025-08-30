@@ -156,11 +156,11 @@ def main(page: ft.Page):
             return
         
         animate_button(run_button)
-
         progress_bar.visible = True
 
-        # --- Шаг 1: Конвертация Excel в JSON ---
-        status_text.value = "Этап 1/3: Конвертация Excel в JSON..."
+        # --- Последовательный процесс обработки ---
+        # Этап 1: Конвертация Excel в JSON
+        status_text.value = "Этап 1/4: Конвертация Excel в JSON..."
         status_text.color = Colors.BLUE_600
         page.update()
 
@@ -179,8 +179,8 @@ def main(page: ft.Page):
             page.update()
             return
 
-        # --- Шаг 2: Парсинг JSON ---
-        status_text.value = "Этап 2/3: Анализ и извлечение данных из JSON..."
+        # Этап 2: Парсинг JSON
+        status_text.value = "Этап 2/4: Анализ и извлечение данных из JSON..."
         status_text.color = Colors.BLUE_600
         page.update()
 
@@ -206,8 +206,27 @@ def main(page: ft.Page):
             page.update()
             return
 
-        # --- Шаг 3: Расчет ---
-        status_text.value = "Этап 3/3: Расчет коэффициентов..."
+        # Этап 3: Подготовка данных
+        status_text.value = "Этап 3/4: Подготовка данных для расчета..."
+        status_text.color = Colors.BLUE_600
+        page.update()
+
+        try:
+            # Здесь можно добавить дополнительную обработку данных, если необходимо
+            pass
+
+        except Exception as ex:
+            error_msg = f"Ошибка на этапе подготовки данных: {ex}"
+            status_text.value = error_msg
+            status_text.color = Colors.RED_700
+            progress_bar.visible = False
+            show_snackbar("Ошибка подготовки данных", Colors.RED_500)
+            log.exception("Ошибка подготовки данных в GUI")
+            page.update()
+            return
+
+        # Этап 4: Расчет
+        status_text.value = "Этап 4/4: Расчет коэффициентов..."
         status_text.color = Colors.BLUE_600
         page.update()
 
